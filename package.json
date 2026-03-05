@@ -1,6 +1,6 @@
 {
   "name": "@amplifi-liquidity/amplifi-vaults-sdk",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "The Amplifi Vaults SDK",
   "main": "dist/src/index.cjs.js",
   "module": "dist/src/index.esm.js",
@@ -30,19 +30,19 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ichidao/ichi-vaults-sdk.git"
+    "url": "git+https://github.com/amplifi-liquidity/amplifi-vaults-sdk.git"
   },
   "keywords": [
-    "ichi",
-    "ichivaults",
+    "amplifi",
+    "amplifi-vaults",
     "sdk"
   ],
-  "author": "ICHI DAO <core@ichi.org>",
+  "author": "Amplifi Liquidity",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/ichidao/ichi-vaults-sdk/issues"
+    "url": "https://github.com/amplifi-liquidity/amplifi-vaults-sdk/issues"
   },
-  "homepage": "https://github.com/ichidao/ichi-vaults-sdk#readme",
+  "homepage": "https://github.com/amplifi-liquidity/amplifi-vaults-sdk#readme",
   "dependencies": {
     "@thanpolas/univ3prices": "^3.0.2",
     "@typechain/ethers-v6": "^0.5.1",
