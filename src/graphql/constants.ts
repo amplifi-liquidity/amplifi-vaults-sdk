@@ -188,10 +188,11 @@ export const graphUrls: Record<SupportedChainId, dexGraph> = {
       version: 2,
     },
     [SupportedDex.UniswapV3]: {
-      url: 'https://api.studio.thegraph.com/query/88584/base-v1/version/latest',
+      url: 'https://api.studio.thegraph.com/query/88584/base-v-2-uniswap/version/latest',
       publishedUrl:
-        'https://gateway-arbitrum.network.thegraph.com/api/[api-key]/subgraphs/id/2RW5ke8ps9rAjPaAxxQpe8rFexLWWMLL5ySzwLZPnG6g',
+        'https://gateway-arbitrum.network.thegraph.com/api/[api-key]/subgraphs/id/EzLMDy8YSDAVw4HJEt7i6Zmo8TsU2bzVYZ1emPKWqTbM',
       supportsCollectFees: true,
+      version: 2,
     },
   },
   [SupportedChainId.base_sepolia]: {
