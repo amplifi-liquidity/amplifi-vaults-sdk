@@ -24,8 +24,11 @@ export function vaultQuery(includeHoldersCount: boolean, version: number = 1) {
           id
           token0
           token1
+          decimals0
+          decimals1
           allowToken0
           allowToken1
+          totalSupply
           fee
           ${includeHoldersCount ? 'holdersCount' : ''}
         }

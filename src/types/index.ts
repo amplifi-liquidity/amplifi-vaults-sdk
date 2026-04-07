@@ -156,6 +156,9 @@ export interface IchiVault {
   tokenB: string;
   allowTokenA: boolean;
   allowTokenB: boolean;
+  decimals0?: number;
+  decimals1?: number;
+  totalSupply?: string;
   holdersCount?: string;
   fee?: string;
   farmingContract?: string; // used for Velodrome vaults only

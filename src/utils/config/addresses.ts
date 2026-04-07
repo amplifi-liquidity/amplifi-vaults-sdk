@@ -625,6 +625,15 @@ export const addressConfig: Record<SupportedChainId, Config> = {
       vaultDeployerAddress: '0x2ca0824135b7da7B956CD1B851C451Bc801eb976',
       isAlgebra: false,
     },
+    [SupportedDex.Aux]: {
+      factoryAddress: '0x20d1Ef15D5a16687c0bBF1B84c7e0553AF8b6c1f',
+      depositGuard: {
+        address: '0x078d09b0F74955ba9C15F458add204283a7D0A51',
+        version: 2,
+      },
+      vaultDeployerAddress: '0x2ca0824135b7da7B956CD1B851C451Bc801eb976',
+      isAlgebra: false,
+    },
   },
   [SupportedChainId.fuse]: {
     [SupportedDex.Voltage]: {

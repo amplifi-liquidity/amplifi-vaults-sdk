@@ -12,7 +12,7 @@ import {
 // eslint-disable-next-line import/no-cycle
 import { validateVaultData } from './vault';
 import { getTokenDecimals } from './_totalBalances';
-import { getCurrentDtr, getSqrtPriceFromPool } from './priceFromPool';
+import { getSqrtPriceFromPool } from './priceFromPool';
 import { daysToMilliseconds } from '../utils/timestamps';
 import getPrice from '../utils/getPrice';
 import { getIchiVaultContract } from '../contracts';
@@ -30,22 +30,33 @@ export async function getVaultMetrics(
 ): Promise<(VaultMetrics | null)[]> {
   const { chainId, vault } = await validateVaultData(vaultAddress, jsonProvider, dex);
 
-  const decimals0 = await getTokenDecimals(vault.tokenA, jsonProvider, chainId);
-  const decimals1 = await getTokenDecimals(vault.tokenB, jsonProvider, chainId);
+  // Use subgraph decimals if available (v2), otherwise fall back to RPC
+  const [decimals0, decimals1] = vault.decimals0 != null && vault.decimals1 != null
+    ? [vault.decimals0, vault.decimals1]
+    : await Promise.all([
+        getTokenDecimals(vault.tokenA, jsonProvider, chainId),
+        getTokenDecimals(vault.tokenB, jsonProvider, chainId),
+      ]);
+
   const isInv = vault.allowTokenB;
   const depositTokenDecimals = isInv ? decimals1 : decimals0;
   const scarceTokenDecimals = isInv ? decimals0 : decimals1;
   const vaultContract = getIchiVaultContract(vaultAddress, jsonProvider);
 
-  // to remove/rewrite
   const arrDays = timeIntervals && timeIntervals.length > 0 ? timeIntervals : [1, 7, 30];
   const maxTimeInterval = Math.max(...arrDays);
-  // const allDtrs = await getAllDtrsForTimeInterval(vaultAddress, jsonProvider, dex, maxTimeInterval);
 
   let currLpPrice = 0;
   let currTvl = 0;
+  let currentDtrPercent = 0;
   try {
-    const totalAmountsBN = await vaultContract.getTotalAmounts();
+    // Parallelize contract calls
+    const [totalAmountsBN, poolAddress, totalSupplyBN] = await Promise.all([
+      vaultContract.getTotalAmounts(),
+      vaultContract.pool(),
+      vault.totalSupply != null ? null : vaultContract.totalSupply(),
+    ]);
+
     const totalAmounts = {
       total0: formatBigInt(totalAmountsBN.total0, decimals0),
       total1: formatBigInt(totalAmountsBN.total1, decimals1),
@@ -53,34 +64,49 @@ export async function getVaultMetrics(
       1: formatBigInt(totalAmountsBN.total1, decimals1),
     } as TotalAmounts;
 
-    const poolAddress: string = await vaultContract.pool();
     const sqrtPrice = await getSqrtPriceFromPool(poolAddress, jsonProvider, chainId, dex);
-
     const price = getPrice(isInv, sqrtPrice, depositTokenDecimals, scarceTokenDecimals, 15);
+
     currTvl = !isInv
       ? Number(totalAmounts.total0) + Number(totalAmounts.total1) * price
       : Number(totalAmounts.total1) + Number(totalAmounts.total0) * price;
 
-    const totalSupplyBN = await vaultContract.totalSupply();
-    const totalSupply = formatBigInt(totalSupplyBN, ichiVaultDecimals);
+    const totalSupply = vault.totalSupply != null
+      ? formatBigInt(BigInt(vault.totalSupply), ichiVaultDecimals)
+      : formatBigInt(totalSupplyBN!, ichiVaultDecimals);
 
     if (Number(totalSupply) === 0) {
       throw new Error(`Could not get LP price. Vault total supply is 0 for vault ${vaultAddress} on chain ${chainId}`);
     }
 
     currLpPrice = currTvl / Number(totalSupply);
+
+    // Compute current DTR inline instead of calling getCurrentDtr (which duplicates RPC calls)
+    const total0Num = Number(totalAmounts.total0);
+    const total1Num = Number(totalAmounts.total1);
+    if (total0Num + total1Num * price === 0) {
+      currentDtrPercent = 0;
+    } else {
+      currentDtrPercent = !isInv
+        ? (total0Num / (total0Num + total1Num * price)) * 100
+        : (total1Num / (total1Num + total0Num * price)) * 100;
+    }
   } catch (e) {
     console.error(`Could not get LP price from vault ${vaultAddress} `);
     throw e;
   }
 
-  const rebalances = (await _getRebalances(vaultAddress, chainId, dex)) as Fees[];
+  // Parallelize all subgraph event queries
+  const [rebalances, collectedFees, deposits, withdraws] = await Promise.all([
+    _getRebalances(vaultAddress, chainId, dex) as Promise<Fees[]>,
+    _getFeesCollectedEvents(vaultAddress, chainId, dex) as Promise<Fees[]>,
+    _getDeposits(vaultAddress, chainId, dex) as Promise<VaultTransactionEvent[]>,
+    _getWithdraws(vaultAddress, chainId, dex) as Promise<VaultTransactionEvent[]>,
+  ]);
+
   if (!rebalances) throw new Error(`Error getting vault rebalances on ${chainId} for ${vaultAddress}`);
-  const collectedFees = (await _getFeesCollectedEvents(vaultAddress, chainId, dex)) as Fees[];
   if (!collectedFees) throw new Error(`Error getting vault collected fees on ${chainId} for ${vaultAddress}`);
-  const deposits = (await _getDeposits(vaultAddress, chainId, dex)) as VaultTransactionEvent[];
   if (!deposits) throw new Error(`Error getting vault deposits on ${chainId} for ${vaultAddress}`);
-  const withdraws = (await _getWithdraws(vaultAddress, chainId, dex)) as VaultTransactionEvent[];
   if (!withdraws) throw new Error(`Error getting vault withdraws on ${chainId} for ${vaultAddress}`);
 
   const vaultEvents = [...deposits, ...withdraws, ...rebalances, ...collectedFees].sort(
@@ -105,7 +131,7 @@ export async function getVaultMetrics(
     .map((e) => getDtrAtTransactionEvent(e, isInv, decimals0, decimals1));
   const currentDtr = {
     atTimestamp: Math.floor(Date.now() / 1000).toString(),
-    percent: await getCurrentDtr(vaultAddress, jsonProvider, dex, isInv, decimals0, decimals1),
+    percent: currentDtrPercent,
   } as DepositTokenRatio;
 
   const allDtrs = [...arrDeposits, ...arrWithdraws, ...arrRebalances, ...arrOtherFees, currentDtr].sort(

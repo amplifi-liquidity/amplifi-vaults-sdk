@@ -428,6 +428,12 @@ export const graphUrls: Record<SupportedChainId, dexGraph> = {
       supportsCollectFees: true,
       version: 2,
     },
+    [SupportedDex.Aux]: {
+      url: 'https://api.goldsky.com/api/public/project_clynrq1h8gam301xx6vgngo9p/subgraphs/g2/flow-v2-aux/gn',
+      publishedUrl: 'https://api.goldsky.com/api/public/project_clynrq1h8gam301xx6vgngo9p/subgraphs/g2/flow-v2-aux/gn',
+      supportsCollectFees: true,
+      version: 2,
+    },
   },
   [SupportedChainId.fuse]: {
     [SupportedDex.Voltage]: {

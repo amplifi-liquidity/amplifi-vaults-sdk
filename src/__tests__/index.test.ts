@@ -62,20 +62,20 @@ const wallet = new Wallet(process.env.PRIVATE_KEY!, provider);
 const account = process.env.ACCOUNT!;
 
 const vault = {
-  address: '0x88213a99d59e73763230342652104cA5c8430d10',
+  address: '0x406fb13fDCe1E1c1259c0663d3DCb0D524Eece01',
   chainId: SupportedChainId.base,
   dex: SupportedDex.TrebleswapV2,
 };
 
 const pool = {
-  address: '0x205918f0Cbf3d02fFFf97A472A24610b03bB7fF4',
+  address: '0x6D354e51dD1e390851353bA5dA4Cb5737E62909e',
   chainId: SupportedChainId.base,
   dex: SupportedDex.TrebleswapV2,
 };
 
 const tokens = {
-  pairedToken: '0xB96450dCB16e4a30b999Cb5F4087bae9c0ffAc4e',
-  depositToken: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
+  pairedToken: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
+  depositToken: '0xDd2fc771dDAB2b787AEDFd100a67d8a4754A380c',
 };
 
 const iface = new ethers.Interface(ICHIVAULT_ABI);
@@ -94,7 +94,7 @@ describe('Vault', () => {
     }
   });
 
-  it.skip('getVaultMetrics', async () => {
+  it('getVaultMetrics', async () => {
     const metrics = await getVaultMetrics(vault.address, provider, vault.dex);
     expect(Number(metrics[0]?.avgDtr)).toBeGreaterThan(0);
   });
