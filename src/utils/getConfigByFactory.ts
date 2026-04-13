@@ -15,7 +15,6 @@ export type FactoryConfig = {
   version?: number;
   isAlgebra: boolean;
   ammVersion?: string;
-  is2Thick?: boolean;
 };
 
 /**
@@ -51,7 +50,6 @@ export function getConfigByFactory(chainId: SupportedChainId, factoryAddress: st
         version: graph?.version,
         isAlgebra: config.isAlgebra,
         ammVersion: config.ammVersion,
-        is2Thick: config.is2Thick,
       };
     }
   }
@@ -88,7 +86,6 @@ export function getAllFactoryConfigs(chainId: SupportedChainId): Map<string, Fac
       version: graph?.version,
       isAlgebra: config.isAlgebra,
       ammVersion: config.ammVersion,
-      is2Thick: config.is2Thick,
     });
   }
 

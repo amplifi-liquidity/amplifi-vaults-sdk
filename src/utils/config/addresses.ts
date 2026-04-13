@@ -7,6 +7,7 @@ export type AddressConfig = { [key in SupportedDex]?: string };
 
 export const AMM_VERSIONS = {
   ALGEBRA_INTEGRAL: 'algebraIntegral',
+  UNISWAP_NO_FEE: 'uniswapNoFee',
 };
 
 export type SupportedDexConfig = {
@@ -18,7 +19,6 @@ export type SupportedDexConfig = {
   vaultDeployerAddress: string;
   isAlgebra: boolean;
   ammVersion?: string;
-  is2Thick?: boolean; // Equalizer 2Thick deployment, vaults don't have fee
   mfdEnabled?: boolean; // Has MultiFeeDistributor rewards
 };
 
@@ -203,7 +203,7 @@ export const addressConfig: Record<SupportedChainId, Config> = {
       },
       vaultDeployerAddress: '0x7d11De61c219b70428Bb3199F0DD88bA9E76bfEE',
       isAlgebra: false,
-      is2Thick: true,
+      ammVersion: AMM_VERSIONS.UNISWAP_NO_FEE,
     },
     [SupportedDex.Henjin]: {
       factoryAddress: '0x51a0D74e1791399cE02aafD9a21dc4637Fe57959',
@@ -1056,7 +1056,7 @@ export const addressConfig: Record<SupportedChainId, Config> = {
       },
       vaultDeployerAddress: '0x0b2a31D95B1a4c8b1e772599ffcB8875FB4e2d33',
       isAlgebra: false,
-      is2Thick: true,
+      ammVersion: AMM_VERSIONS.UNISWAP_NO_FEE,
     },
     [SupportedDex.SwapX]: {
       factoryAddress: '0x34513e8A327987Bb44acF5A925a7f3b4092d8b5F',

@@ -1,7 +1,7 @@
 // eslint-disable-next-line import/no-unresolved
 import { gql } from 'graphql-request';
 import { SupportedChainId, SupportedDex } from '../types';
-import { addressConfig } from '../utils/config/addresses';
+import { addressConfig, AMM_VERSIONS } from '../utils/config/addresses';
 import { getGraphUrls } from '../utils/getGraphUrls';
 import { isMfdEnabled } from '../utils/isVelodrome';
 
@@ -120,10 +120,9 @@ export function getVaultQuery(chainId: SupportedChainId, dex: SupportedDex) {
     return vaultQueryVelodrome;
   }
 
-  const isAlgebra = addressConfig[chainId]?.[dex]?.isAlgebra;
-  const is2Thick = addressConfig[chainId]?.[dex]?.is2Thick;
+  const dexConfig = addressConfig[chainId]?.[dex];
 
-  return isAlgebra || is2Thick
+  return dexConfig?.isAlgebra || dexConfig?.ammVersion === AMM_VERSIONS.UNISWAP_NO_FEE
     ? vaultQueryAlgebra(includeHoldersCount, version)
     : vaultQuery(includeHoldersCount, version);
 }
