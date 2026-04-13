@@ -8,6 +8,7 @@ export type AddressConfig = { [key in SupportedDex]?: string };
 export const AMM_VERSIONS = {
   ALGEBRA_INTEGRAL: 'algebraIntegral',
   UNISWAP_NO_FEE: 'uniswapNoFee',
+  VELODROME: 'velodrome',
 };
 
 export type SupportedDexConfig = {
@@ -163,7 +164,7 @@ export const addressConfig: Record<SupportedChainId, Config> = {
       },
       vaultDeployerAddress: '0x7d11De61c219b70428Bb3199F0DD88bA9E76bfEE',
       isAlgebra: false,
-
+      ammVersion: AMM_VERSIONS.VELODROME,
       mfdEnabled: true,
     },
     [SupportedDex.AerodromeV2]: {
@@ -174,7 +175,7 @@ export const addressConfig: Record<SupportedChainId, Config> = {
       },
       vaultDeployerAddress: '0x7d11De61c219b70428Bb3199F0DD88bA9E76bfEE',
       isAlgebra: false,
-
+      ammVersion: AMM_VERSIONS.VELODROME,
       mfdEnabled: true,
     },
     [SupportedDex.Aux]: {
@@ -509,7 +510,7 @@ export const addressConfig: Record<SupportedChainId, Config> = {
       },
       vaultDeployerAddress: '0xfAcD9c86f7766A5171bb0F9927De808929429A47',
       isAlgebra: false,
-
+      ammVersion: AMM_VERSIONS.VELODROME,
       mfdEnabled: true,
     },
   },
@@ -791,7 +792,7 @@ export const addressConfig: Record<SupportedChainId, Config> = {
       },
       vaultDeployerAddress: '0xcBd1F70235904d3764f5d159022BA0281536E3E8',
       isAlgebra: false,
-
+      ammVersion: AMM_VERSIONS.VELODROME,
       mfdEnabled: true,
     },
   },
