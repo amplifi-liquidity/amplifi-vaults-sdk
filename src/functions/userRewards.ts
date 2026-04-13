@@ -2,7 +2,7 @@
 /* eslint-disable import/no-cycle */
 
 import { JsonRpcProvider } from 'ethers';
-import { getAllRewardVaults, validateVaultData } from './vault';
+import { getAllRewardVaults, getChainId, validateVaultData } from './vault';
 import {
   SupportedDex,
   UserRewards,
@@ -38,8 +38,7 @@ export async function getUserRewards(
   dex: SupportedDex,
   raw?: true,
 ) {
-  const network = await jsonProvider.getNetwork();
-  const chainId = Number(network.chainId);
+  const chainId = await getChainId(jsonProvider);
   const isVelodrome = isVelodromeDex(chainId, dex);
   if (!isVelodrome) {
     throw new Error(`This function is not supported on chain ${chainId} and dex ${dex}`);
@@ -97,8 +96,7 @@ export async function getAllUserRewards(
   dex: SupportedDex,
   raw?: true,
 ) {
-  const network = await jsonProvider.getNetwork();
-  const chainId = Number(network.chainId);
+  const chainId = await getChainId(jsonProvider);
   const isVelodrome = isVelodromeDex(chainId, dex);
   if (!isVelodrome) {
     throw new Error(`This function is not supported on chain ${chainId} and dex ${dex}`);

@@ -4,7 +4,7 @@ import parseBigInt from '../utils/parseBigInt';
 import { SupportedDex, SupportedChainId, IchiVault } from '../types';
 import { calculateGasMargin, getGasLimit } from '../types/calculateGasMargin';
 // eslint-disable-next-line import/no-cycle
-import { getIchiVaultInfo, validateVaultData } from './vault';
+import { getChainId, getIchiVaultInfo, validateVaultData } from './vault';
 import { addressConfig } from '../utils/config/addresses';
 import amountWithSlippage from '../utils/amountWithSlippage';
 import getVaultDeployer from './vaultBasics';
@@ -16,11 +16,7 @@ export async function isTokenAllowed(
   jsonProvider: JsonRpcProvider,
   dex: SupportedDex,
 ): Promise<boolean> {
-  const network = await jsonProvider.getNetwork();
-  const chainId = Number(network.chainId) as SupportedChainId;
-  if (!Object.values(SupportedChainId).includes(chainId)) {
-    throw new Error(`Unsupported chainId: ${chainId}`);
-  }
+  const chainId = await getChainId(jsonProvider);
 
   const vault = await getIchiVaultInfo(chainId, dex, vaultAddress, jsonProvider);
   if (!vault) throw new Error(`Vault ${vaultAddress} not found on chain ${chainId} and dex ${dex}`);

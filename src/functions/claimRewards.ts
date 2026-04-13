@@ -2,7 +2,7 @@ import { JsonRpcProvider, ContractTransactionResponse, Overrides, Signer } from 
 import { SupportedDex, SupportedChainId } from '../types';
 import { isVelodromeDex } from '../utils/isVelodrome';
 // eslint-disable-next-line import/no-cycle
-import { validateVaultData } from './vault';
+import { getChainId, validateVaultData } from './vault';
 import { getMultiFeeDistributorContract } from '../contracts';
 import { calculateGasMargin } from '../types/calculateGasMargin';
 
@@ -28,8 +28,7 @@ export async function claimRewards(
     throw new Error('Signer must be connected to a provider');
   }
   const jsonProvider = signer.provider as JsonRpcProvider;
-  const network = await jsonProvider.getNetwork();
-  const chainId = Number(network.chainId) as SupportedChainId;
+  const chainId = await getChainId(jsonProvider);
   const isVelodrome = isVelodromeDex(chainId, dex);
   if (!isVelodrome) {
     throw new Error(`This function is not supported on chain ${chainId} and dex ${dex}`);

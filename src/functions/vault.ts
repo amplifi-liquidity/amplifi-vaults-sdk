@@ -14,6 +14,23 @@ import { allRewardVaults, getVaultQuery, vaultByPoolQuery, vaultByTokensQuery } 
 import { getGraphUrls } from '../utils/getGraphUrls';
 import cache from '../utils/cache';
 
+const chainIdCache = new WeakMap<JsonRpcProvider, SupportedChainId>();
+
+export async function getChainId(jsonProvider: JsonRpcProvider): Promise<SupportedChainId> {
+  const cached = chainIdCache.get(jsonProvider);
+  if (cached != null) return cached;
+
+  const network = await jsonProvider.getNetwork();
+  const chainId = Number(network.chainId) as SupportedChainId;
+
+  if (!Object.values(SupportedChainId).includes(chainId)) {
+    throw new Error(`Unsupported chainId: ${chainId ?? 'undefined'}`);
+  }
+
+  chainIdCache.set(jsonProvider, chainId);
+  return chainId;
+}
+
 function normalizeVaultData(vaultData: any): IchiVault {
   // If vaultData is null or undefined, throw an error
   if (!vaultData) {
@@ -236,25 +253,14 @@ export async function validateVaultData(
   jsonProvider: JsonRpcProvider,
   dex: SupportedDex,
 ): Promise<{ chainId: SupportedChainId; vault: IchiVault }> {
-  const network = await jsonProvider.getNetwork();
-  const chainId = Number(network.chainId) as SupportedChainId;
-
-  if (!Object.values(SupportedChainId).includes(chainId)) {
-    throw new Error(`Unsupported chainId: ${chainId ?? 'undefined'}`);
-  }
-
+  const chainId = await getChainId(jsonProvider);
   const vault = await getIchiVaultInfo(chainId, dex, vaultAddress, jsonProvider);
 
   return { chainId, vault };
 }
 
 export async function getChainByProvider(jsonProvider: JsonRpcProvider): Promise<{ chainId: SupportedChainId }> {
-  const network = await jsonProvider.getNetwork();
-  const chainId = Number(network.chainId) as SupportedChainId;
-
-  if (!Object.values(SupportedChainId).includes(chainId)) {
-    throw new Error(`Unsupported chainId: ${chainId ?? 'undefined'}`);
-  }
+  const chainId = await getChainId(jsonProvider);
 
   return { chainId };
 }

@@ -4,7 +4,7 @@
 import { JsonRpcProvider } from 'ethers';
 import { IchiVault, SupportedChainId, SupportedDex } from '../types';
 // eslint-disable-next-line import/no-cycle
-import { getIchiVaultInfo } from './vault';
+import { getChainId, getIchiVaultInfo } from './vault';
 import { getTotalAmounts } from './totalBalances';
 import getPrice from '../utils/getPrice';
 import {
@@ -153,12 +153,7 @@ export async function getCurrentDtr(
   token0decimals: number,
   token1decimals: number,
 ): Promise<number> {
-  const network = await jsonProvider.getNetwork();
-  const chainId = Number(network.chainId) as SupportedChainId;
-
-  if (!Object.values(SupportedChainId).includes(chainId)) {
-    throw new Error(`Unsupported chainId: ${chainId ?? 'undefined'}`);
-  }
+  const chainId = await getChainId(jsonProvider);
 
   const vault = await getIchiVaultInfo(chainId, dex, vaultAddress, jsonProvider);
   if (!vault) throw new Error(`Vault ${vaultAddress} not found on chain ${chainId} and dex ${dex}`);
