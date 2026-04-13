@@ -34,7 +34,7 @@ import {
   encodeTotalSupplyCall,
   multicall,
 } from '../utils/multicallUtils';
-import { isVelodromeDex } from '../utils/isVelodrome';
+import { isMfdEnabled } from '../utils/isVelodrome';
 
 const promises: Record<string, Promise<any>> = {};
 
@@ -169,7 +169,7 @@ export async function getAllUserBalances(
 ) {
   const { chainId } = await getChainByProvider(jsonProvider);
   const { publishedUrl, url } = getGraphUrls(chainId, dex, true);
-  const isVelodrome = isVelodromeDex(chainId, dex);
+  const isVelodrome = isMfdEnabled(chainId, dex);
 
   let shares: UserBalanceInVault[];
   const key = `${chainId + accountAddress}-balances`;

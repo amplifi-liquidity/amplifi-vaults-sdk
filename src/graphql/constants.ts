@@ -317,6 +317,13 @@ export const graphUrls: Record<SupportedChainId, dexGraph> = {
       supportsCollectFees: true,
       version: 2,
     },
+    [SupportedDex.PancakeswapV3]: {
+      url: 'https://api.studio.thegraph.com/query/88584/bsc-v-3-pancakeswap/version/latest',
+      publishedUrl:
+        'https://gateway-arbitrum.network.thegraph.com/api/[api-key]/subgraphs/id/BU8LugjaaUYwV1gRTiNExM7US6DTPjiaPovnmFFhzyN4',
+      supportsCollectFees: true,
+      version: 2,
+    },
   },
   [SupportedChainId.celo]: {
     [SupportedDex.Ubeswap]: {

@@ -7,7 +7,6 @@ export type AddressConfig = { [key in SupportedDex]?: string };
 
 export const AMM_VERSIONS = {
   ALGEBRA_INTEGRAL: 'algebraIntegral',
-  VELODROME: 'velodrome',
 };
 
 export type SupportedDexConfig = {
@@ -20,6 +19,7 @@ export type SupportedDexConfig = {
   isAlgebra: boolean;
   ammVersion?: string;
   is2Thick?: boolean; // Equalizer 2Thick deployment, vaults don't have fee
+  mfdEnabled?: boolean; // Has MultiFeeDistributor rewards
 };
 
 export type Config = { [key in SupportedDex]?: SupportedDexConfig };
@@ -163,7 +163,8 @@ export const addressConfig: Record<SupportedChainId, Config> = {
       },
       vaultDeployerAddress: '0x7d11De61c219b70428Bb3199F0DD88bA9E76bfEE',
       isAlgebra: false,
-      ammVersion: AMM_VERSIONS.VELODROME,
+
+      mfdEnabled: true,
     },
     [SupportedDex.AerodromeV2]: {
       factoryAddress: '0xC327B361A0CAbA1257f674877bD03dfd0b6E3222',
@@ -173,7 +174,8 @@ export const addressConfig: Record<SupportedChainId, Config> = {
       },
       vaultDeployerAddress: '0x7d11De61c219b70428Bb3199F0DD88bA9E76bfEE',
       isAlgebra: false,
-      ammVersion: AMM_VERSIONS.VELODROME,
+
+      mfdEnabled: true,
     },
     [SupportedDex.Aux]: {
       factoryAddress: '0x8371E865eB806631BE237c392C429E2e0c5f8671',
@@ -457,6 +459,17 @@ export const addressConfig: Record<SupportedChainId, Config> = {
       isAlgebra: true,
       ammVersion: AMM_VERSIONS.ALGEBRA_INTEGRAL,
     },
+    [SupportedDex.PancakeswapV3]: {
+      factoryAddress: '0xe3762D764d29Dd0A6bad592c870EF85758AF7666',
+      depositGuard: {
+        address: '0x7Bcce3AC0d053de0b36B71474B769E9Efa9945C4',
+        version: 2,
+      },
+      vaultDeployerAddress: '0x05cC3CA6E768a68A7f86b09e3ceE754437bd5f12',
+      isAlgebra: false,
+
+      mfdEnabled: true,
+    },
     [SupportedDex.ThenaV4Rewards]: {
       factoryAddress: '0xdf1da53334f1C71a1e377C371e11f55c9CDdFc8E',
       depositGuard: {
@@ -466,6 +479,7 @@ export const addressConfig: Record<SupportedChainId, Config> = {
       vaultDeployerAddress: '0x05cC3CA6E768a68A7f86b09e3ceE754437bd5f12',
       isAlgebra: true,
       ammVersion: AMM_VERSIONS.ALGEBRA_INTEGRAL,
+      mfdEnabled: true,
     },
   },
   [SupportedChainId.celo]: {
@@ -495,7 +509,8 @@ export const addressConfig: Record<SupportedChainId, Config> = {
       },
       vaultDeployerAddress: '0xfAcD9c86f7766A5171bb0F9927De808929429A47',
       isAlgebra: false,
-      ammVersion: AMM_VERSIONS.VELODROME,
+
+      mfdEnabled: true,
     },
   },
   [SupportedChainId.citrea]: {
@@ -776,7 +791,8 @@ export const addressConfig: Record<SupportedChainId, Config> = {
       },
       vaultDeployerAddress: '0xcBd1F70235904d3764f5d159022BA0281536E3E8',
       isAlgebra: false,
-      ammVersion: AMM_VERSIONS.VELODROME,
+
+      mfdEnabled: true,
     },
   },
   [SupportedChainId.ink_sepolia]: {

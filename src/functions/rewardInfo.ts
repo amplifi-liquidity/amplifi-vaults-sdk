@@ -9,7 +9,7 @@ import cache from '../utils/cache';
 import { getGraphUrls } from '../utils/getGraphUrls';
 import { allRewardInfoQuery, rewardInfoQuery } from '../graphql/queries';
 import { AllRewardInfoQueryResponse, RewardInfoQueryResponse } from '../types/vaultQueryData';
-import { isVelodromeDex } from '../utils/isVelodrome';
+import { isMfdEnabled } from '../utils/isVelodrome';
 
 async function sendRewardInfoQueryRequest(url: string, vaultAddress: string, query: string): Promise<RewardInfo> {
   return request<RewardInfoQueryResponse, { vaultAddress: string }>(url, query, {
@@ -26,8 +26,7 @@ export async function getRewardInfo(
   dex: SupportedDex,
   vaultAddress: string,
 ): Promise<RewardInfo> {
-  const isVelodrome = isVelodromeDex(chainId, dex);
-  if (!isVelodrome) {
+  if (!isMfdEnabled(chainId, dex)) {
     throw new Error(`This function is not supported on chain ${chainId} and dex ${dex}`);
   }
 
@@ -63,8 +62,7 @@ export async function getRewardInfo(
 }
 
 export async function getAllRewardInfo(chainId: SupportedChainId, dex: SupportedDex): Promise<RewardInfo[]> {
-  const isVelodrome = isVelodromeDex(chainId, dex);
-  if (!isVelodrome) {
+  if (!isMfdEnabled(chainId, dex)) {
     throw new Error(`This function is not supported on chain ${chainId} and dex ${dex}`);
   }
 

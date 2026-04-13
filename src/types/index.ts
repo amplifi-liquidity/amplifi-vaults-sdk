@@ -98,6 +98,7 @@ export enum SupportedDex {
   Nile = 'Nile',
   Ocelex = 'Ocelex',
   Pancakeswap = 'PancakeSwap',
+  PancakeswapV3 = 'PancakeSwapV3',
   Pearl = 'Pearl',
   ProjectX = 'ProjectX',
   Quickswap = 'QuickSwap',

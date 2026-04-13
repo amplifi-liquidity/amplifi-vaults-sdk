@@ -1,6 +1,6 @@
 import { JsonRpcProvider, ContractTransactionResponse, Overrides, Signer } from 'ethers';
 import { SupportedDex, SupportedChainId } from '../types';
-import { isVelodromeDex } from '../utils/isVelodrome';
+import { isMfdEnabled } from '../utils/isVelodrome';
 // eslint-disable-next-line import/no-cycle
 import { getChainId, validateVaultData } from './vault';
 import { getMultiFeeDistributorContract } from '../contracts';
@@ -29,8 +29,7 @@ export async function claimRewards(
   }
   const jsonProvider = signer.provider as JsonRpcProvider;
   const chainId = await getChainId(jsonProvider);
-  const isVelodrome = isVelodromeDex(chainId, dex);
-  if (!isVelodrome) {
+  if (!isMfdEnabled(chainId, dex)) {
     throw new Error(`This function is not supported on chain ${chainId} and dex ${dex}`);
   }
 

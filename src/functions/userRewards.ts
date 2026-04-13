@@ -11,7 +11,7 @@ import {
   UserRewardsByTokenBN,
   VaultWithRewards,
 } from '../types';
-import { isVelodromeDex } from '../utils/isVelodrome';
+import { isMfdEnabled } from '../utils/isVelodrome';
 import { getMultiFeeDistributorContract } from '../contracts';
 import formatBigInt from '../utils/formatBigInt';
 import { decodeFarmingRewardsResult, encodeFarmingRewardsCall, multicall } from '../utils/multicallUtils';
@@ -39,8 +39,7 @@ export async function getUserRewards(
   raw?: true,
 ) {
   const chainId = await getChainId(jsonProvider);
-  const isVelodrome = isVelodromeDex(chainId, dex);
-  if (!isVelodrome) {
+  if (!isMfdEnabled(chainId, dex)) {
     throw new Error(`This function is not supported on chain ${chainId} and dex ${dex}`);
   }
 
@@ -97,8 +96,7 @@ export async function getAllUserRewards(
   raw?: true,
 ) {
   const chainId = await getChainId(jsonProvider);
-  const isVelodrome = isVelodromeDex(chainId, dex);
-  if (!isVelodrome) {
+  if (!isMfdEnabled(chainId, dex)) {
     throw new Error(`This function is not supported on chain ${chainId} and dex ${dex}`);
   }
 

@@ -10,7 +10,6 @@ import getPrice from '../utils/getPrice';
 import {
   getAlgebraIntegralPoolContract,
   getAlgebraPoolContract,
-  getClPoolContract,
   getIchiVaultContract,
   getUniswapV3PoolContract,
 } from '../contracts';
@@ -40,10 +39,6 @@ export async function getSqrtPriceFromPool(
         const globalState = await poolContract.globalState();
         return globalState.price;
       }
-    } else if (dexConfig.ammVersion === AMM_VERSIONS.VELODROME) {
-      const poolContract = getClPoolContract(poolAddress, jsonProvider);
-      const slot0 = await poolContract.slot0();
-      return slot0[0];
     } else {
       const poolContract = getUniswapV3PoolContract(poolAddress, jsonProvider);
       const slot0 = await poolContract.slot0();

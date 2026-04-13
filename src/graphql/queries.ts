@@ -3,7 +3,7 @@ import { gql } from 'graphql-request';
 import { SupportedChainId, SupportedDex } from '../types';
 import { addressConfig } from '../utils/config/addresses';
 import { getGraphUrls } from '../utils/getGraphUrls';
-import { isVelodromeDex } from '../utils/isVelodrome';
+import { isMfdEnabled } from '../utils/isVelodrome';
 
 function noHoldersCount(dex: SupportedDex, chainId: SupportedChainId): boolean {
   return (
@@ -115,8 +115,8 @@ export function getVaultQuery(chainId: SupportedChainId, dex: SupportedDex) {
   const includeHoldersCount = !noHoldersCount(dex, chainId);
   const { version } = getGraphUrls(chainId, dex);
 
-  // Check for Velodrome AMM version first
-  if (isVelodromeDex(chainId, dex)) {
+  // Check for MFD-enabled dexes (rewards with farmingContract)
+  if (isMfdEnabled(chainId, dex)) {
     return vaultQueryVelodrome;
   }
 
@@ -412,8 +412,7 @@ export const allEventsNoCollectFeesQuery = (lastTimestamps: {
 export function getUserBalancesQuery(chainId: SupportedChainId, dex: SupportedDex) {
   const { version } = getGraphUrls(chainId, dex);
 
-  // Check for Velodrome AMM version first
-  const isVelodrome = isVelodromeDex(chainId, dex);
+  const isVelodrome = isMfdEnabled(chainId, dex);
 
   return gql`
     query ($accountAddress: String!) {
