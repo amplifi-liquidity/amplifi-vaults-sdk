@@ -1,6 +1,6 @@
 {
   "name": "@amplifi-liquidity/amplifi-vaults-sdk",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "The Amplifi Vaults SDK",
   "main": "dist/src/index.cjs.js",
   "module": "dist/src/index.esm.js",
