@@ -345,6 +345,13 @@ export const graphUrls: Record<SupportedChainId, dexGraph> = {
       supportsCollectFees: true,
       version: 2,
     },
+    [SupportedDex.Aux]: {
+      url: 'https://api.studio.thegraph.com/query/88584/celo-v-2-aux-uniswap/version/latest',
+      publishedUrl:
+        'https://gateway-arbitrum.network.thegraph.com/api/[api-key]/subgraphs/id/71RfxYwsAgGPWb17iBDJJoS1e2Vd8whkduhwPkRNZMCp',
+      supportsCollectFees: true,
+      version: 2,
+    },
   },
   [SupportedChainId.citrea]: {
     [SupportedDex.Satsuma]: {

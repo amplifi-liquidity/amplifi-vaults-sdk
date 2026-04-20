@@ -513,6 +513,15 @@ export const addressConfig: Record<SupportedChainId, Config> = {
       ammVersion: AMM_VERSIONS.VELODROME,
       mfdEnabled: true,
     },
+    [SupportedDex.Aux]: {
+      factoryAddress: '0x7df494aD51fAeaFB8C46c63d23Ee40A48b14e975',
+      depositGuard: {
+        address: '0xA19595C6CA6186621dDdE0Dba0aD24c5e84d5A14',
+        version: 2,
+      },
+      vaultDeployerAddress: '0xfAcD9c86f7766A5171bb0F9927De808929429A47',
+      isAlgebra: false,
+    },
   },
   [SupportedChainId.citrea]: {
     [SupportedDex.Satsuma]: {
