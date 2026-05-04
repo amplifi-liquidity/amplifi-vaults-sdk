@@ -253,6 +253,8 @@ export type FeeAprData = {
   feeApr_3d: number | null;
   feeApr_7d: number | null;
   feeApr_30d: number | null;
+  feeApr_60d?: number | null;
+  feeApr_90d?: number | null;
 };
 
 export type PriceChange = {

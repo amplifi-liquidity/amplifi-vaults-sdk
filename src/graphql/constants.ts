@@ -9,6 +9,7 @@ type GraphQL = {
   publishedUrl: string;
   supportsCollectFees: boolean;
   version?: number; // version 2 uses token0/1 instead of tokenA/B, supports vault fee APRs
+  supportsExtendedFeeAprs?: boolean;
 };
 type dexGraph = PartialRecord<SupportedDex, GraphQL>;
 
@@ -488,6 +489,7 @@ export const graphUrls: Record<SupportedChainId, dexGraph> = {
         'https://api.goldsky.com/api/public/project_clynrq1h8gam301xx6vgngo9p/subgraphs/g2/hedera-v2-bonzo/gn',
       supportsCollectFees: true,
       version: 2,
+      supportsExtendedFeeAprs: true,
     },
     [SupportedDex.Aux]: {
       url: 'https://api.goldsky.com/api/public/project_clynrq1h8gam301xx6vgngo9p/subgraphs/g2/hedera-v2-aux/gn',

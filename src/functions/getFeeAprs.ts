@@ -39,6 +39,7 @@ export async function getFeeAprs(
     return null;
   }
 
+  const extended = dexConfig.supportsExtendedFeeAprs === true;
   const { publishedUrl, url } = getGraphUrls(chainId, dex, true);
 
   try {
@@ -46,7 +47,7 @@ export async function getFeeAprs(
 
     if (publishedUrl) {
       try {
-        result = await sendFeeAprQueryRequest(publishedUrl, vaultAddress);
+        result = await sendFeeAprQueryRequest(publishedUrl, vaultAddress, extended);
       } catch (error) {
         console.error('Request to published graph URL failed:', error);
       }
@@ -54,7 +55,7 @@ export async function getFeeAprs(
 
     if (!result) {
       try {
-        result = await sendFeeAprQueryRequest(url, vaultAddress);
+        result = await sendFeeAprQueryRequest(url, vaultAddress, extended);
       } catch (error) {
         console.error('Request to public graph URL failed:', error);
         return null;
@@ -70,6 +71,10 @@ export async function getFeeAprs(
       feeApr_3d: result.ichiVault.feeApr_3d ? result.ichiVault.feeApr_3d : null,
       feeApr_7d: result.ichiVault.feeApr_7d ? result.ichiVault.feeApr_7d : null,
       feeApr_30d: result.ichiVault.feeApr_30d ? result.ichiVault.feeApr_30d : null,
+      ...(extended && {
+        feeApr_60d: result.ichiVault.feeApr_60d ? result.ichiVault.feeApr_60d : null,
+        feeApr_90d: result.ichiVault.feeApr_90d ? result.ichiVault.feeApr_90d : null,
+      }),
     };
 
     cache.set(key, feeAprData, ttl);

@@ -9,7 +9,7 @@ import {
   VaultDepositsQueryData,
   VaultWithdrawsQueryData,
 } from '../types/vaultQueryData';
-import { feeAprQuery } from './queries';
+import { feeAprQuery, extendedFeeAprQuery } from './queries';
 
 export async function sendAllEventsQueryRequest(
   url: string,
@@ -71,8 +71,9 @@ export async function sendWithdrawsQueryRequest(
   }).then(({ vaultWithdraws }) => vaultWithdraws);
 }
 
-export async function sendFeeAprQueryRequest(url: string, vaultAddress: string): Promise<FeeAprQueryResponse> {
-  return request<FeeAprQueryResponse, { vaultAddress: string }>(url, feeAprQuery, {
+export async function sendFeeAprQueryRequest(url: string, vaultAddress: string, extended?: boolean): Promise<FeeAprQueryResponse> {
+  const query = extended ? extendedFeeAprQuery : feeAprQuery;
+  return request<FeeAprQueryResponse, { vaultAddress: string }>(url, query, {
     vaultAddress: vaultAddress.toLowerCase(),
   });
 }

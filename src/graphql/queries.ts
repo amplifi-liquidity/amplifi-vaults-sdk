@@ -442,6 +442,19 @@ export const feeAprQuery = gql`
   }
 `;
 
+export const extendedFeeAprQuery = gql`
+  query ($vaultAddress: String!) {
+    ichiVault(id: $vaultAddress) {
+      feeApr_1d
+      feeApr_3d
+      feeApr_7d
+      feeApr_30d
+      feeApr_60d
+      feeApr_90d
+    }
+  }
+`;
+
 export const rewardInfoQuery = gql`
   query ($vaultAddress: String!) {
     ichiVault(id: $vaultAddress) {
