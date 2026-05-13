@@ -3,22 +3,22 @@
 /* eslint-disable import/no-cycle */
 /* eslint-disable import/prefer-default-export */
 
-import request from 'graphql-request';
 import { RewardInfo, SupportedChainId, SupportedDex } from '../types';
 import cache from '../utils/cache';
 import { getGraphUrls } from '../utils/getGraphUrls';
 import { allRewardInfoQuery, rewardInfoQuery } from '../graphql/queries';
 import { AllRewardInfoQueryResponse, RewardInfoQueryResponse } from '../types/vaultQueryData';
 import { isMfdEnabled } from '../utils/isVelodrome';
+import { graphqlRequest } from '../graphql/functions';
 
-async function sendRewardInfoQueryRequest(url: string, vaultAddress: string, query: string): Promise<RewardInfo> {
-  return request<RewardInfoQueryResponse, { vaultAddress: string }>(url, query, {
+async function sendRewardInfoQueryRequest(url: string, vaultAddress: string, query: string, isAmplifiHosted?: boolean): Promise<RewardInfo> {
+  return graphqlRequest<RewardInfoQueryResponse, { vaultAddress: string }>(url, query, {
     vaultAddress: vaultAddress.toLowerCase(),
-  }).then(({ ichiVault }) => ichiVault);
+  }, isAmplifiHosted).then(({ ichiVault }) => ichiVault);
 }
 
-async function sendAllRewardInfoQueryRequest(url: string, query: string): Promise<RewardInfo[]> {
-  return request<AllRewardInfoQueryResponse>(url, query).then(({ ichiVaults }) => ichiVaults);
+async function sendAllRewardInfoQueryRequest(url: string, query: string, isAmplifiHosted?: boolean): Promise<RewardInfo[]> {
+  return graphqlRequest<AllRewardInfoQueryResponse>(url, query, undefined, isAmplifiHosted).then(({ ichiVaults }) => ichiVaults);
 }
 
 export async function getRewardInfo(
@@ -37,11 +37,11 @@ export async function getRewardInfo(
     return cachedData as RewardInfo;
   }
 
-  const { url, publishedUrl } = getGraphUrls(chainId, dex);
+  const { url, publishedUrl, isAmplifiHosted } = getGraphUrls(chainId, dex);
 
   try {
     if (publishedUrl) {
-      const result = await sendRewardInfoQueryRequest(publishedUrl, vaultAddress, rewardInfoQuery);
+      const result = await sendRewardInfoQueryRequest(publishedUrl, vaultAddress, rewardInfoQuery, isAmplifiHosted);
       cache.set(key, result, ttl);
       return result;
     }
@@ -73,11 +73,11 @@ export async function getAllRewardInfo(chainId: SupportedChainId, dex: Supported
     return cachedData as RewardInfo[];
   }
 
-  const { url, publishedUrl } = getGraphUrls(chainId, dex);
+  const { url, publishedUrl, isAmplifiHosted } = getGraphUrls(chainId, dex);
 
   try {
     if (publishedUrl) {
-      const result = await sendAllRewardInfoQueryRequest(publishedUrl, allRewardInfoQuery);
+      const result = await sendAllRewardInfoQueryRequest(publishedUrl, allRewardInfoQuery, isAmplifiHosted);
       cache.set(key, result, ttl);
       return result;
     }

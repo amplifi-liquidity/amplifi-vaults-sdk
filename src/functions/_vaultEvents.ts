@@ -39,7 +39,7 @@ export async function _getAllEvents(
   }
 
   const ttl = 120000;
-  const { publishedUrl, url } = getGraphUrls(chainId, dex, true);
+  const { publishedUrl, url, isAmplifiHosted } = getGraphUrls(chainId, dex, true);
   const currTimestamp = Date.now();
   const startTimestamp = days
     ? parseInt(((currTimestamp - daysToMilliseconds(days)) / 1000).toString()).toString()
@@ -71,7 +71,7 @@ export async function _getAllEvents(
     let result;
     try {
       if (publishedUrl) {
-        result = await sendAllEventsQueryRequest(publishedUrl, vaultAddress, startTimestamp, query(lastTimestamps));
+        result = await sendAllEventsQueryRequest(publishedUrl, vaultAddress, startTimestamp, query(lastTimestamps), isAmplifiHosted);
       } else {
         throw new Error(`Published URL is invalid for dex ${dex} on chain ${chainId}`);
       }
@@ -166,7 +166,7 @@ export async function _getRebalances(
   }
 
   const ttl = 120000;
-  const { publishedUrl, url } = getGraphUrls(chainId, dex, true);
+  const { publishedUrl, url, isAmplifiHosted } = getGraphUrls(chainId, dex, true);
 
   const currTimestamp = Date.now();
   const startTimestamp = days
@@ -186,6 +186,7 @@ export async function _getRebalances(
           vaultAddress,
           startTimestamp,
           rebalancesQuery(lastTimestamp),
+          isAmplifiHosted,
         );
       } else {
         throw new Error(`Published URL is invalid for dex ${dex} on chain ${chainId}`);
@@ -234,7 +235,7 @@ export async function _getFeesCollectedEvents(
   }
 
   const ttl = 120000;
-  const { publishedUrl, url } = getGraphUrls(chainId, dex, true);
+  const { publishedUrl, url, isAmplifiHosted } = getGraphUrls(chainId, dex, true);
 
   const supportsCollectFees = graphUrls[chainId as SupportedChainId]![dex]?.supportsCollectFees;
   if (!supportsCollectFees) {
@@ -261,6 +262,7 @@ export async function _getFeesCollectedEvents(
           vaultAddress,
           startTimestamp,
           vaultCollectFeesQuery(lastTimestamp),
+          isAmplifiHosted,
         );
       } else {
         throw new Error(`Published URL is invalid for dex ${dex} on chain ${chainId}`);
@@ -313,7 +315,7 @@ export async function _getDeposits(
   }
 
   const ttl = 120000;
-  const { publishedUrl, url } = getGraphUrls(chainId, dex, true);
+  const { publishedUrl, url, isAmplifiHosted } = getGraphUrls(chainId, dex, true);
 
   const currTimestamp = Date.now();
   const startTimestamp = days
@@ -333,6 +335,7 @@ export async function _getDeposits(
           vaultAddress,
           startTimestamp,
           vaultDepositsQuery(lastTimestamp),
+          isAmplifiHosted,
         );
       } else {
         throw new Error(`Published URL is invalid for dex ${dex} on chain ${chainId}`);
@@ -381,7 +384,7 @@ export async function _getWithdraws(
   }
 
   const ttl = 120000;
-  const { publishedUrl, url } = getGraphUrls(chainId, dex, true);
+  const { publishedUrl, url, isAmplifiHosted } = getGraphUrls(chainId, dex, true);
 
   const currTimestamp = Date.now();
   const startTimestamp = days
@@ -401,6 +404,7 @@ export async function _getWithdraws(
           vaultAddress,
           startTimestamp,
           vaultWithdrawsQuery(lastTimestamp),
+          isAmplifiHosted,
         );
       } else {
         throw new Error(`Published URL is invalid for dex ${dex} on chain ${chainId}`);

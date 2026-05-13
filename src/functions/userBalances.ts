@@ -2,8 +2,6 @@
 /* eslint-disable import/prefer-default-export */
 
 import { JsonRpcProvider } from 'ethers';
-// eslint-disable-next-line import/no-unresolved
-import { request } from 'graphql-request';
 import { getIchiVaultContract, getMultiFeeDistributorContract } from '../contracts';
 import {
   SupportedDex,
@@ -35,6 +33,7 @@ import {
   multicall,
 } from '../utils/multicallUtils';
 import { isMfdEnabled } from '../utils/isVelodrome';
+import { graphqlRequest } from '../graphql/functions';
 
 const promises: Record<string, Promise<any>> = {};
 
@@ -127,16 +126,17 @@ export async function sendUserBalancesQueryRequest(
   accountAddress: string,
   query: string,
   vaultAddress?: string,
+  isAmplifiHosted?: boolean,
 ): Promise<UserBalancesQueryData['user']> {
   if (vaultAddress) {
-    return request<UserBalancesQueryData, { accountAddress: string; vaultAddress: string }>(url, query, {
+    return graphqlRequest<UserBalancesQueryData, { accountAddress: string; vaultAddress: string }>(url, query, {
       accountAddress: accountAddress.toLowerCase(),
       vaultAddress: vaultAddress.toLowerCase(),
-    }).then(({ user }) => user);
+    }, isAmplifiHosted).then(({ user }) => user);
   } else {
-    return request<UserBalancesQueryData, { accountAddress: string }>(url, query, {
+    return graphqlRequest<UserBalancesQueryData, { accountAddress: string }>(url, query, {
       accountAddress: accountAddress.toLowerCase(),
-    }).then(({ user }) => user);
+    }, isAmplifiHosted).then(({ user }) => user);
   }
 }
 function storeResult(key: string, result: any) {
@@ -168,7 +168,7 @@ export async function getAllUserBalances(
   raw?: true,
 ) {
   const { chainId } = await getChainByProvider(jsonProvider);
-  const { publishedUrl, url } = getGraphUrls(chainId, dex, true);
+  const { publishedUrl, url, isAmplifiHosted } = getGraphUrls(chainId, dex, true);
   const isVelodrome = isMfdEnabled(chainId, dex);
 
   let shares: UserBalanceInVault[];
@@ -177,7 +177,7 @@ export async function getAllUserBalances(
     const strUserBalancesQuery = getUserBalancesQuery(chainId, dex);
     try {
       if (publishedUrl) {
-        const result = await sendUserBalancesQueryRequest(publishedUrl, accountAddress, strUserBalancesQuery);
+        const result = await sendUserBalancesQueryRequest(publishedUrl, accountAddress, strUserBalancesQuery, undefined, isAmplifiHosted);
         storeResult(key, result);
       } else {
         throw new Error(`Published URL is invalid for dex ${dex} on chain ${chainId}`);
@@ -313,14 +313,14 @@ export async function getAllUserAmounts(
   raw?: true,
 ) {
   const { chainId } = await getChainByProvider(jsonProvider);
-  const { publishedUrl, url } = getGraphUrls(chainId, dex, true);
+  const { publishedUrl, url, isAmplifiHosted } = getGraphUrls(chainId, dex, true);
 
   const key = `${chainId + accountAddress}-all-user-amounts`;
   if (!Object.prototype.hasOwnProperty.call(promises, key)) {
     const strUserBalancesQuery = getUserBalancesQuery(chainId, dex);
     try {
       if (publishedUrl) {
-        const result = await sendUserBalancesQueryRequest(publishedUrl, accountAddress, strUserBalancesQuery);
+        const result = await sendUserBalancesQueryRequest(publishedUrl, accountAddress, strUserBalancesQuery, undefined, isAmplifiHosted);
         storeResult(key, result);
       } else {
         throw new Error(`Published URL is invalid for dex ${dex} on chain ${chainId}`);

@@ -11,16 +11,35 @@ import {
 } from '../types/vaultQueryData';
 import { feeAprQuery, extendedFeeAprQuery } from './queries';
 
+function getAmplifiHeaders(): Record<string, string> {
+  const apiKey = process.env.AMPLIFI_SUBGRAPH_API_KEY;
+  return apiKey ? { 'x-api-key': apiKey } : {};
+}
+
+export async function graphqlRequest<TResult, TVariables extends Record<string, unknown> = Record<string, unknown>>(
+  url: string,
+  query: string,
+  variables?: TVariables,
+  isAmplifiHosted?: boolean,
+): Promise<TResult> {
+  const headers = isAmplifiHosted ? getAmplifiHeaders() : undefined;
+  // graphql-request's request() uses rest args: (url, doc, ...variablesAndHeaders)
+  return request<TResult>(url, query, variables, headers);
+}
+
 export async function sendAllEventsQueryRequest(
   url: string,
   vaultAddress: string,
   createdAtTimestamp_gt: string,
   query: string,
+  isAmplifiHosted?: boolean,
 ): Promise<any> {
-  return request<any, { vaultAddress: string; createdAtTimestamp_gt: string }>(url, query, {
-    vaultAddress,
-    createdAtTimestamp_gt,
-  }).then((result) => result);
+  return graphqlRequest<any, { vaultAddress: string; createdAtTimestamp_gt: string }>(
+    url,
+    query,
+    { vaultAddress, createdAtTimestamp_gt },
+    isAmplifiHosted,
+  ).then((result) => result);
 }
 
 export async function sendRebalancesQueryRequest(
@@ -28,11 +47,14 @@ export async function sendRebalancesQueryRequest(
   vaultAddress: string,
   createdAtTimestamp_gt: string,
   query: string,
+  isAmplifiHosted?: boolean,
 ): Promise<RebalancesQueryData['vaultRebalances']> {
-  return request<RebalancesQueryData, { vaultAddress: string; createdAtTimestamp_gt: string }>(url, query, {
-    vaultAddress,
-    createdAtTimestamp_gt,
-  }).then(({ vaultRebalances }) => vaultRebalances);
+  return graphqlRequest<RebalancesQueryData, { vaultAddress: string; createdAtTimestamp_gt: string }>(
+    url,
+    query,
+    { vaultAddress, createdAtTimestamp_gt },
+    isAmplifiHosted,
+  ).then(({ vaultRebalances }) => vaultRebalances);
 }
 
 export async function sendCollectFeesQueryRequest(
@@ -40,11 +62,14 @@ export async function sendCollectFeesQueryRequest(
   vaultAddress: string,
   createdAtTimestamp_gt: string,
   query: string,
+  isAmplifiHosted?: boolean,
 ): Promise<CollectFeesQueryData['vaultCollectFees']> {
-  return request<CollectFeesQueryData, { vaultAddress: string; createdAtTimestamp_gt: string }>(url, query, {
-    vaultAddress,
-    createdAtTimestamp_gt,
-  }).then(({ vaultCollectFees }) => vaultCollectFees);
+  return graphqlRequest<CollectFeesQueryData, { vaultAddress: string; createdAtTimestamp_gt: string }>(
+    url,
+    query,
+    { vaultAddress, createdAtTimestamp_gt },
+    isAmplifiHosted,
+  ).then(({ vaultCollectFees }) => vaultCollectFees);
 }
 
 export async function sendDepositsQueryRequest(
@@ -52,11 +77,14 @@ export async function sendDepositsQueryRequest(
   vaultAddress: string,
   createdAtTimestamp_gt: string,
   query: string,
+  isAmplifiHosted?: boolean,
 ): Promise<VaultDepositsQueryData['vaultDeposits']> {
-  return request<VaultDepositsQueryData, { vaultAddress: string; createdAtTimestamp_gt: string }>(url, query, {
-    vaultAddress,
-    createdAtTimestamp_gt,
-  }).then(({ vaultDeposits }) => vaultDeposits);
+  return graphqlRequest<VaultDepositsQueryData, { vaultAddress: string; createdAtTimestamp_gt: string }>(
+    url,
+    query,
+    { vaultAddress, createdAtTimestamp_gt },
+    isAmplifiHosted,
+  ).then(({ vaultDeposits }) => vaultDeposits);
 }
 
 export async function sendWithdrawsQueryRequest(
@@ -64,16 +92,22 @@ export async function sendWithdrawsQueryRequest(
   vaultAddress: string,
   createdAtTimestamp_gt: string,
   query: string,
+  isAmplifiHosted?: boolean,
 ): Promise<VaultWithdrawsQueryData['vaultWithdraws']> {
-  return request<VaultWithdrawsQueryData, { vaultAddress: string; createdAtTimestamp_gt: string }>(url, query, {
-    vaultAddress,
-    createdAtTimestamp_gt,
-  }).then(({ vaultWithdraws }) => vaultWithdraws);
+  return graphqlRequest<VaultWithdrawsQueryData, { vaultAddress: string; createdAtTimestamp_gt: string }>(
+    url,
+    query,
+    { vaultAddress, createdAtTimestamp_gt },
+    isAmplifiHosted,
+  ).then(({ vaultWithdraws }) => vaultWithdraws);
 }
 
-export async function sendFeeAprQueryRequest(url: string, vaultAddress: string, extended?: boolean): Promise<FeeAprQueryResponse> {
+export async function sendFeeAprQueryRequest(url: string, vaultAddress: string, extended?: boolean, isAmplifiHosted?: boolean): Promise<FeeAprQueryResponse> {
   const query = extended ? extendedFeeAprQuery : feeAprQuery;
-  return request<FeeAprQueryResponse, { vaultAddress: string }>(url, query, {
-    vaultAddress: vaultAddress.toLowerCase(),
-  });
+  return graphqlRequest<FeeAprQueryResponse, { vaultAddress: string }>(
+    url,
+    query,
+    { vaultAddress: vaultAddress.toLowerCase() },
+    isAmplifiHosted,
+  );
 }

@@ -1,5 +1,3 @@
-// eslint-disable-next-line import/no-unresolved
-import { request } from 'graphql-request';
 import { JsonRpcProvider } from 'ethers';
 import { SupportedDex, SupportedChainId, IchiVault, VaultWithRewards } from '../types';
 // eslint-disable-next-line import/no-cycle
@@ -13,6 +11,7 @@ import { getIchiVaultContract } from '../contracts';
 import { allRewardVaults, getVaultQuery, vaultByPoolQuery, vaultByTokensQuery } from '../graphql/queries';
 import { getGraphUrls } from '../utils/getGraphUrls';
 import cache from '../utils/cache';
+import { graphqlRequest } from '../graphql/functions';
 
 const chainIdCache = new WeakMap<JsonRpcProvider, SupportedChainId>();
 
@@ -79,29 +78,30 @@ async function getVaultInfoFromContract(vaultAddress: string, jsonProvider: Json
   return vault;
 }
 
-async function sendVaultQueryRequest(url: string, vaultAddress: string, query: string): Promise<IchiVault> {
-  return request<VaultQueryData, { vaultAddress: string }>(url, query, {
+async function sendVaultQueryRequest(url: string, vaultAddress: string, query: string, isAmplifiHosted?: boolean): Promise<IchiVault> {
+  return graphqlRequest<VaultQueryData, { vaultAddress: string }>(url, query, {
     vaultAddress: vaultAddress.toLowerCase(),
-  }).then(({ ichiVault }) => ichiVault);
+  }, isAmplifiHosted).then(({ ichiVault }) => ichiVault);
 }
 async function sendVaultsByTokensRequest(
   url: string,
   token1: string,
   token2: string,
   query: string,
+  isAmplifiHosted?: boolean,
 ): Promise<IchiVault[]> {
-  return request<VaultsByTokensQueryData, { addressTokenA: string; addressTokenB: string }>(url, query, {
+  return graphqlRequest<VaultsByTokensQueryData, { addressTokenA: string; addressTokenB: string }>(url, query, {
     addressTokenA: token1,
     addressTokenB: token2,
-  }).then(({ ichiVaults }) => ichiVaults);
+  }, isAmplifiHosted).then(({ ichiVaults }) => ichiVaults);
 }
-async function sendVaultsByPoolQueryRequest(url: string, poolAddress: string, query: string): Promise<string[]> {
-  return request<VaultsByPoolQueryData, { poolAddress: string }>(url, query, {
+async function sendVaultsByPoolQueryRequest(url: string, poolAddress: string, query: string, isAmplifiHosted?: boolean): Promise<string[]> {
+  return graphqlRequest<VaultsByPoolQueryData, { poolAddress: string }>(url, query, {
     poolAddress: poolAddress.toLowerCase(),
-  }).then(({ deployICHIVaults }) => deployICHIVaults);
+  }, isAmplifiHosted).then(({ deployICHIVaults }) => deployICHIVaults);
 }
-async function sendAllRewardVaultsQueryRequest(url: string, query: string): Promise<VaultWithRewards[]> {
-  return request<AllRewardVaultsQueryResponse>(url, query).then(({ ichiVaults }) => ichiVaults);
+async function sendAllRewardVaultsQueryRequest(url: string, query: string, isAmplifiHosted?: boolean): Promise<VaultWithRewards[]> {
+  return graphqlRequest<AllRewardVaultsQueryResponse>(url, query, undefined, isAmplifiHosted).then(({ ichiVaults }) => ichiVaults);
 }
 
 export async function getIchiVaultInfo(
@@ -117,7 +117,7 @@ export async function getIchiVaultInfo(
     return cachedData as IchiVault;
   }
 
-  const { url, publishedUrl } = getGraphUrls(chainId, dex);
+  const { url, publishedUrl, isAmplifiHosted } = getGraphUrls(chainId, dex);
   const thisQuery = getVaultQuery(chainId, dex);
 
   if (url === 'none' && jsonProvider) {
@@ -127,7 +127,7 @@ export async function getIchiVaultInfo(
   }
   try {
     if (publishedUrl) {
-      const result = await sendVaultQueryRequest(publishedUrl, vaultAddress, thisQuery);
+      const result = await sendVaultQueryRequest(publishedUrl, vaultAddress, thisQuery, isAmplifiHosted);
       const normalizedResult = normalizeVaultData(result);
       cache.set(key, normalizedResult, ttl);
       return normalizedResult;
@@ -168,13 +168,13 @@ async function getVaultsByTokensAB(
   }
 
   const ttl = 3600000;
-  const { url, publishedUrl, version } = getGraphUrls(chainId, dex, true);
+  const { url, publishedUrl, version, isAmplifiHosted } = getGraphUrls(chainId, dex, true);
 
   const strVaultByTokensQuery = vaultByTokensQuery(version);
 
   try {
     if (publishedUrl) {
-      const result = await sendVaultsByTokensRequest(publishedUrl, tokenA, tokenB, strVaultByTokensQuery);
+      const result = await sendVaultsByTokensRequest(publishedUrl, tokenA, tokenB, strVaultByTokensQuery, isAmplifiHosted);
       cache.set(key, result, ttl);
       return result;
     } else {
@@ -223,12 +223,12 @@ export async function getVaultsByPool(
     return cachedData as VaultsByPoolQueryData['deployICHIVaults'];
   }
 
-  const { url, publishedUrl } = getGraphUrls(chainId, dex, true);
+  const { url, publishedUrl, isAmplifiHosted } = getGraphUrls(chainId, dex, true);
   const ttl = 3600000;
 
   try {
     if (publishedUrl) {
-      const result = await sendVaultsByPoolQueryRequest(publishedUrl, poolAddress, vaultByPoolQuery);
+      const result = await sendVaultsByPoolQueryRequest(publishedUrl, poolAddress, vaultByPoolQuery, isAmplifiHosted);
       cache.set(key, result, ttl);
       return result;
     }
@@ -272,12 +272,12 @@ export async function getAllRewardVaults(chainId: SupportedChainId, dex: Support
     return cachedData as VaultWithRewards[];
   }
 
-  const { url, publishedUrl } = getGraphUrls(chainId, dex, true);
+  const { url, publishedUrl, isAmplifiHosted } = getGraphUrls(chainId, dex, true);
   const ttl = 3600000;
 
   try {
     if (publishedUrl) {
-      const result = await sendAllRewardVaultsQueryRequest(publishedUrl, allRewardVaults);
+      const result = await sendAllRewardVaultsQueryRequest(publishedUrl, allRewardVaults, isAmplifiHosted);
       cache.set(key, result, ttl);
       return result;
     }

@@ -40,14 +40,14 @@ export async function getFeeAprs(
   }
 
   const extended = dexConfig.supportsExtendedFeeAprs === true;
-  const { publishedUrl, url } = getGraphUrls(chainId, dex, true);
+  const { publishedUrl, url, isAmplifiHosted } = getGraphUrls(chainId, dex, true);
 
   try {
     let result: FeeAprQueryResponse | null = null;
 
     if (publishedUrl) {
       try {
-        result = await sendFeeAprQueryRequest(publishedUrl, vaultAddress, extended);
+        result = await sendFeeAprQueryRequest(publishedUrl, vaultAddress, extended, isAmplifiHosted);
       } catch (error) {
         console.error('Request to published graph URL failed:', error);
       }

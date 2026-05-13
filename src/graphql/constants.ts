@@ -10,6 +10,7 @@ type GraphQL = {
   supportsCollectFees: boolean;
   version?: number; // version 2 uses token0/1 instead of tokenA/B, supports vault fee APRs
   supportsExtendedFeeAprs?: boolean;
+  isAmplifiHosted?: boolean;
 };
 type dexGraph = PartialRecord<SupportedDex, GraphQL>;
 
@@ -215,16 +216,17 @@ export const graphUrls: Record<SupportedChainId, dexGraph> = {
   [SupportedChainId.berachain]: {
     [SupportedDex.Kodiak]: {
       url: 'https://api.studio.thegraph.com/query/88584/berachain-v1-kodiak/version/latest',
-      publishedUrl:
-        'https://gateway-arbitrum.network.thegraph.com/api/[api-key]/subgraphs/id/7P9DAPWihEJ3QHrR9eeEp3KAP9FgTTo2SnzAaXXPQSau',
+      publishedUrl: 'https://graph-api.amplifiliquidity.com/subgraphs/name/amplifi/berachain-v2-kodiak',
       supportsCollectFees: true,
+      version: 2,
+      isAmplifiHosted: true,
     },
     [SupportedDex.Wasabee]: {
       url: 'https://api.studio.thegraph.com/query/88584/berachain-v2-wasabee/version/latest',
-      publishedUrl:
-        'https://gateway-arbitrum.network.thegraph.com/api/[api-key]/subgraphs/id/8hmju8E9uZRmMAFGv2j4cGHF6GFVm8ederosj7hF4gsw',
+      publishedUrl: 'https://graph-api.amplifiliquidity.com/subgraphs/name/amplifi/berachain-v2-wasabee',
       supportsCollectFees: true,
       version: 2,
+      isAmplifiHosted: true,
     },
   },
   [SupportedChainId.berachain_bartio]: {
@@ -358,9 +360,10 @@ export const graphUrls: Record<SupportedChainId, dexGraph> = {
     [SupportedDex.Satsuma]: {
       url: 'https://api.goldsky.com/api/public/project_clynrq1h8gam301xx6vgngo9p/subgraphs/g2/citrea-v2-satsuma/gn',
       publishedUrl:
-        'https://api.goldsky.com/api/public/project_clynrq1h8gam301xx6vgngo9p/subgraphs/g2/citrea-v2-satsuma/gn',
+        'https://graph-api.amplifiliquidity.com/subgraphs/name/amplifi/citrea-v2-satsuma',
       supportsCollectFees: true,
       version: 2,
+      isAmplifiHosted: true,
     },
   },
   [SupportedChainId.citrea_testnet]: {
@@ -433,13 +436,15 @@ export const graphUrls: Record<SupportedChainId, dexGraph> = {
   [SupportedChainId.flow]: {
     [SupportedDex.FlowSwap]: {
       url: 'https://api.goldsky.com/api/public/project_clynrq1h8gam301xx6vgngo9p/subgraphs/g2/flow-v2-flowswap/gn',
-      publishedUrl: 'https://api.goldsky.com/api/public/project_clynrq1h8gam301xx6vgngo9p/subgraphs/g2/flow-v2-flowswap/gn',
+      publishedUrl:
+        'https://api.goldsky.com/api/public/project_clynrq1h8gam301xx6vgngo9p/subgraphs/g2/flow-v2-flowswap/gn',
       supportsCollectFees: true,
       version: 2,
     },
     [SupportedDex.KittyPunch]: {
       url: 'https://api.goldsky.com/api/public/project_clynrq1h8gam301xx6vgngo9p/subgraphs/g2/flow-v2-kittypunch/gn',
-      publishedUrl: 'https://api.goldsky.com/api/public/project_clynrq1h8gam301xx6vgngo9p/subgraphs/g2/flow-v2-kittypunch/gn',
+      publishedUrl:
+        'https://api.goldsky.com/api/public/project_clynrq1h8gam301xx6vgngo9p/subgraphs/g2/flow-v2-kittypunch/gn',
       supportsCollectFees: true,
       version: 2,
     },
@@ -549,15 +554,17 @@ export const graphUrls: Record<SupportedChainId, dexGraph> = {
     [SupportedDex.Reservoir]: {
       url: 'https://api.studio.thegraph.com/query/88584/ink-v-1-reservoir/version/latest',
       publishedUrl:
-        'https://gateway-arbitrum.network.thegraph.com/api/[api-key]/subgraphs/id/HpknPC4bxoVsiNp1gXq63w4tcjFGN9ZokWSWdc3aKSRz',
+        'https://graph-api.amplifiliquidity.com/subgraphs/name/amplifi/ink-v1-reservoir',
       supportsCollectFees: true,
+      isAmplifiHosted: true,
     },
     [SupportedDex.Velodrome]: {
       url: 'https://api.studio.thegraph.com/query/88584/ink-v-3-velodrome/version/latest',
       publishedUrl:
-        'https://gateway-arbitrum.network.thegraph.com/api/[api-key]/subgraphs/id/DpBJxoNPbremsbV22e6wm3GCq41R715QXPUYdPxd9TQi',
+        'https://graph-api.amplifiliquidity.com/subgraphs/name/amplifi/ink-v3-velodrome',
       supportsCollectFees: true,
       version: 2,
+      isAmplifiHosted: true,
     },
   },
   [SupportedChainId.ink_sepolia]: {
@@ -572,9 +579,10 @@ export const graphUrls: Record<SupportedChainId, dexGraph> = {
     [SupportedDex.Sushiswap]: {
       url: 'https://api.studio.thegraph.com/query/88584/katana-v-2-sushiswap/version/latest',
       publishedUrl:
-        'https://gateway-arbitrum.network.thegraph.com/api/[api-key]/subgraphs/id/F4BWERAWUduNTwZEF72yYi8GyEbWWsDdDZbJADUEUG16',
+        'https://graph-api.amplifiliquidity.com/subgraphs/name/amplifi/katana-v2-sushiswap',
       supportsCollectFees: true,
       version: 2,
+      isAmplifiHosted: true,
     },
   },
   [SupportedChainId.kava]: {
@@ -639,10 +647,10 @@ export const graphUrls: Record<SupportedChainId, dexGraph> = {
   [SupportedChainId.megaeth]: {
     [SupportedDex.Kumbaya]: {
       url: 'https://api.studio.thegraph.com/query/88584/megaeth-v-2-kumbaya/version/latest',
-      publishedUrl:
-        'https://gateway-arbitrum.network.thegraph.com/api/[api-key]/subgraphs/id/Cii4puahhoSVBLrvnSb938vQWKBwD2Zr2z9tBv9VPjEW',
+      publishedUrl: 'https://graph-api.amplifiliquidity.com/subgraphs/name/amplifi/megaeth-v2-kumbaya',
       supportsCollectFees: true,
       version: 2,
+      isAmplifiHosted: true,
     },
   },
   [SupportedChainId.mode]: {
@@ -806,9 +814,9 @@ export const graphUrls: Record<SupportedChainId, dexGraph> = {
   [SupportedChainId.zircuit]: {
     [SupportedDex.Ocelex]: {
       url: 'https://api.goldsky.com/api/public/project_clynrq1h8gam301xx6vgngo9p/subgraphs/ichi-org/zircuit-v1-ocelex-0.0.1/gn',
-      publishedUrl:
-        'https://api.goldsky.com/api/public/project_clynrq1h8gam301xx6vgngo9p/subgraphs/ichi-org/zircuit-v1-ocelex-0.0.1/gn',
+      publishedUrl: 'https://graph-api.amplifiliquidity.com/subgraphs/name/amplifi/zircuit-v1-ocelex',
       supportsCollectFees: true,
+      isAmplifiHosted: true,
     },
   },
   [SupportedChainId.zksync_era]: {
