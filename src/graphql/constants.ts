@@ -75,6 +75,13 @@ export const graphUrls: Record<SupportedChainId, dexGraph> = {
         'https://gateway-arbitrum.network.thegraph.com/api/[api-key]/subgraphs/id/GtYgZPoaEtbiajpAEZCGk9Z6MGHFmXeNyvnG5voF5AuS',
       supportsCollectFees: true,
     },
+    [SupportedDex.UniswapNew]: {
+      url: 'https://api.studio.thegraph.com/query/88584/ethereum-v-2-uniswap/version/latest',
+      publishedUrl:
+        'https://gateway-arbitrum.network.thegraph.com/api/[api-key]/subgraphs/id/HRMM3vQ8wxgNzbHcYQxesZ1dp9tQUW5YQSC8H9iC6A6r',
+      supportsCollectFees: true,
+      version: 2,
+    },
   },
   [SupportedChainId.polygon]: {
     [SupportedDex.UniswapNew]: {
