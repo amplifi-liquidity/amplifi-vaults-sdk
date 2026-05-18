@@ -366,8 +366,7 @@ export const graphUrls: Record<SupportedChainId, dexGraph> = {
   [SupportedChainId.citrea]: {
     [SupportedDex.Satsuma]: {
       url: 'https://api.goldsky.com/api/public/project_clynrq1h8gam301xx6vgngo9p/subgraphs/g2/citrea-v2-satsuma/gn',
-      publishedUrl:
-        'https://graph-api.amplifiliquidity.com/subgraphs/name/amplifi/citrea-v2-satsuma',
+      publishedUrl: 'https://graph-api.amplifiliquidity.com/subgraphs/name/amplifi/citrea-v2-satsuma',
       supportsCollectFees: true,
       version: 2,
       isAmplifiHosted: true,
@@ -422,9 +421,9 @@ export const graphUrls: Record<SupportedChainId, dexGraph> = {
   [SupportedChainId.flare]: {
     [SupportedDex.SparkDex]: {
       url: 'https://api.goldsky.com/api/public/project_clynrq1h8gam301xx6vgngo9p/subgraphs/ichi-org/flare-v2-sparkdex/gn',
-      publishedUrl:
-        'https://api.goldsky.com/api/public/project_clynrq1h8gam301xx6vgngo9p/subgraphs/ichi-org/flare-v2-sparkdex/gn',
+      publishedUrl: 'https://graph-api.amplifiliquidity.com/subgraphs/name/amplifi/flare-v2-sparkdex',
       supportsCollectFees: true,
+      isAmplifiHosted: true,
     },
     [SupportedDex.SparkDexV1]: {
       url: 'https://api.goldsky.com/api/public/project_clynrq1h8gam301xx6vgngo9p/subgraphs/ichi-org/flare-v1-sparkdex/gn',
@@ -434,32 +433,33 @@ export const graphUrls: Record<SupportedChainId, dexGraph> = {
     },
     [SupportedDex.SparkDexV4]: {
       url: 'https://api.goldsky.com/api/public/project_clynrq1h8gam301xx6vgngo9p/subgraphs/g2/flare-v4-sparkdex/gn',
-      publishedUrl:
-        'https://api.goldsky.com/api/public/project_clynrq1h8gam301xx6vgngo9p/subgraphs/g2/flare-v4-sparkdex/gn',
+      publishedUrl: 'https://graph-api.amplifiliquidity.com/subgraphs/name/amplifi/flare-v4-sparkdex',
       supportsCollectFees: true,
       version: 2,
+      isAmplifiHosted: true,
     },
   },
   [SupportedChainId.flow]: {
     [SupportedDex.FlowSwap]: {
       url: 'https://api.goldsky.com/api/public/project_clynrq1h8gam301xx6vgngo9p/subgraphs/g2/flow-v2-flowswap/gn',
-      publishedUrl:
-        'https://api.goldsky.com/api/public/project_clynrq1h8gam301xx6vgngo9p/subgraphs/g2/flow-v2-flowswap/gn',
+      publishedUrl: 'https://graph-api.amplifiliquidity.com/subgraphs/name/amplifi/flow-v2-flowswap',
       supportsCollectFees: true,
       version: 2,
+      isAmplifiHosted: true,
     },
     [SupportedDex.KittyPunch]: {
       url: 'https://api.goldsky.com/api/public/project_clynrq1h8gam301xx6vgngo9p/subgraphs/g2/flow-v2-kittypunch/gn',
-      publishedUrl:
-        'https://api.goldsky.com/api/public/project_clynrq1h8gam301xx6vgngo9p/subgraphs/g2/flow-v2-kittypunch/gn',
+      publishedUrl: 'https://graph-api.amplifiliquidity.com/subgraphs/name/amplifi/flow-v2-kittypunch',
       supportsCollectFees: true,
       version: 2,
+      isAmplifiHosted: true,
     },
     [SupportedDex.Aux]: {
       url: 'https://api.goldsky.com/api/public/project_clynrq1h8gam301xx6vgngo9p/subgraphs/g2/flow-v2-aux/gn',
-      publishedUrl: 'https://api.goldsky.com/api/public/project_clynrq1h8gam301xx6vgngo9p/subgraphs/g2/flow-v2-aux/gn',
+      publishedUrl: 'https://graph-api.amplifiliquidity.com/subgraphs/name/amplifi/flow-v2-aux',
       supportsCollectFees: true,
       version: 2,
+      isAmplifiHosted: true,
     },
   },
   [SupportedChainId.fuse]: {
@@ -560,15 +560,13 @@ export const graphUrls: Record<SupportedChainId, dexGraph> = {
   [SupportedChainId.ink]: {
     [SupportedDex.Reservoir]: {
       url: 'https://api.studio.thegraph.com/query/88584/ink-v-1-reservoir/version/latest',
-      publishedUrl:
-        'https://graph-api.amplifiliquidity.com/subgraphs/name/amplifi/ink-v1-reservoir',
+      publishedUrl: 'https://graph-api.amplifiliquidity.com/subgraphs/name/amplifi/ink-v1-reservoir',
       supportsCollectFees: true,
       isAmplifiHosted: true,
     },
     [SupportedDex.Velodrome]: {
       url: 'https://api.studio.thegraph.com/query/88584/ink-v-3-velodrome/version/latest',
-      publishedUrl:
-        'https://graph-api.amplifiliquidity.com/subgraphs/name/amplifi/ink-v3-velodrome',
+      publishedUrl: 'https://graph-api.amplifiliquidity.com/subgraphs/name/amplifi/ink-v3-velodrome',
       supportsCollectFees: true,
       version: 2,
       isAmplifiHosted: true,
@@ -585,8 +583,7 @@ export const graphUrls: Record<SupportedChainId, dexGraph> = {
   [SupportedChainId.katana]: {
     [SupportedDex.Sushiswap]: {
       url: 'https://api.studio.thegraph.com/query/88584/katana-v-2-sushiswap/version/latest',
-      publishedUrl:
-        'https://graph-api.amplifiliquidity.com/subgraphs/name/amplifi/katana-v2-sushiswap',
+      publishedUrl: 'https://graph-api.amplifiliquidity.com/subgraphs/name/amplifi/katana-v2-sushiswap',
       supportsCollectFees: true,
       version: 2,
       isAmplifiHosted: true,
@@ -689,10 +686,10 @@ export const graphUrls: Record<SupportedChainId, dexGraph> = {
   [SupportedChainId.moonbeam]: {
     [SupportedDex.StellaSwap]: {
       url: 'https://api.studio.thegraph.com/query/88584/moonbeam-v-2-stellaswap/version/latest',
-      publishedUrl:
-        'https://gateway-arbitrum.network.thegraph.com/api/[api-key]/subgraphs/id/DgBPraNX8mK7uthvPtzq2rMWx1eU543rWT8kBi1ogWh8',
+      publishedUrl: 'https://graph-api.amplifiliquidity.com/subgraphs/name/amplifi/moonbeam-v2-stellaswap',
       supportsCollectFees: true,
       version: 2,
+      isAmplifiHosted: true,
     },
   },
   [SupportedChainId.nibiru]: {
