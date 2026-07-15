@@ -172,7 +172,7 @@ export async function getAllUserBalances(
   const isVelodrome = isMfdEnabled(chainId, dex);
 
   let shares: UserBalanceInVault[];
-  const key = `${chainId + accountAddress}-balances`;
+  const key = `${chainId}-${dex}-${accountAddress}-balances`;
   if (!Object.prototype.hasOwnProperty.call(promises, key)) {
     const strUserBalancesQuery = getUserBalancesQuery(chainId, dex);
     try {
@@ -315,7 +315,7 @@ export async function getAllUserAmounts(
   const { chainId } = await getChainByProvider(jsonProvider);
   const { publishedUrl, url, isAmplifiHosted } = getGraphUrls(chainId, dex, true);
 
-  const key = `${chainId + accountAddress}-all-user-amounts`;
+  const key = `${chainId}-${dex}-${accountAddress}-all-user-amounts`;
   if (!Object.prototype.hasOwnProperty.call(promises, key)) {
     const strUserBalancesQuery = getUserBalancesQuery(chainId, dex);
     try {
