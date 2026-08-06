@@ -27,6 +27,7 @@ __metadata:
     "@thanpolas/univ3prices": ^3.0.2
     "@typechain/ethers-v6": ^0.5.1
     "@types/jest": ^27.5.0
+    "@types/node": 22.7.5
     "@typescript-eslint/eslint-plugin": ^5.27.1
     "@typescript-eslint/parser": ^5.27.1
     bignumber.js: ^9.0.1
