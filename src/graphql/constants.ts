@@ -494,18 +494,21 @@ export const graphUrls: Record<SupportedChainId, dexGraph> = {
       publishedUrl:
         'https://api.goldsky.com/api/public/project_clynrq1h8gam301xx6vgngo9p/subgraphs/g2/hedera-v2-saucerswap-1.2/gn',
       supportsCollectFees: true,
+      version: 2,
     },
     [SupportedDex.Bonzo]: {
       url: 'https://api.goldsky.com/api/public/project_clynrq1h8gam301xx6vgngo9p/subgraphs/g2/hedera-v2-bonzo-1.2/gn',
       publishedUrl:
         'https://api.goldsky.com/api/public/project_clynrq1h8gam301xx6vgngo9p/subgraphs/g2/hedera-v2-bonzo-1.2/gn',
       supportsCollectFees: true,
+      version: 2,
     },
     [SupportedDex.Aux]: {
       url: 'https://api.goldsky.com/api/public/project_clynrq1h8gam301xx6vgngo9p/subgraphs/g2/hedera-v2-aux-1.2/gn',
       publishedUrl:
         'https://api.goldsky.com/api/public/project_clynrq1h8gam301xx6vgngo9p/subgraphs/g2/hedera-v2-aux-1.2/gn',
       supportsCollectFees: true,
+      version: 2,
     },
     [SupportedDex.SaucerSwap_Old]: {
       url: 'https://api.goldsky.com/api/public/project_clynrq1h8gam301xx6vgngo9p/subgraphs/g2/hedera-v1-saucerswap/gn',
