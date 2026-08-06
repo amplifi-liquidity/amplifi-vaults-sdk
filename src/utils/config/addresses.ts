@@ -704,6 +704,33 @@ export const addressConfig: Record<SupportedChainId, Config> = {
   },
   [SupportedChainId.hedera]: {
     [SupportedDex.SaucerSwap]: {
+      factoryAddress: '0xB7C699574e7efB08f0dC3c3D0f01AEaF6b12A46F',
+      depositGuard: {
+        address: '0x4686C74DeE4E3f6731b507f10422eE7bF2d2F5Af',
+        version: 2,
+      },
+      vaultDeployerAddress: '0xC159b19C5bd0E4a0709eC13C1303Ff2Bb67F7145',
+      isAlgebra: false,
+    },
+    [SupportedDex.Bonzo]: {
+      factoryAddress: '0x02D1d31c789346b398dfF9B0648acE1Cb594b26E',
+      depositGuard: {
+        address: '0x7e44b3238707D686e76554555C4D0FDCA1112D92',
+        version: 2,
+      },
+      vaultDeployerAddress: '0xC159b19C5bd0E4a0709eC13C1303Ff2Bb67F7145',
+      isAlgebra: false,
+    },
+    [SupportedDex.Aux]: {
+      factoryAddress: '0x8bd25cCe635203334118c32Fee3Aa6E8902aDf79',
+      depositGuard: {
+        address: '0x03DFb8F5EA3C53F096d53560B44dAe1e7cc82174',
+        version: 2,
+      },
+      vaultDeployerAddress: '0xC159b19C5bd0E4a0709eC13C1303Ff2Bb67F7145',
+      isAlgebra: false,
+    },
+    [SupportedDex.SaucerSwap_Old]: {
       factoryAddress: '0xb62399d23d1c81f08ea445a42d7f15cc12090a71',
       depositGuard: {
         address: '0x1B0ef045830466171D617dD0F1142aD699A4Cd63',
@@ -712,7 +739,7 @@ export const addressConfig: Record<SupportedChainId, Config> = {
       vaultDeployerAddress: '0x8514B2Fa2889F7A2f46F1AA66b514999F2a7327F',
       isAlgebra: false,
     },
-    [SupportedDex.Bonzo]: {
+    [SupportedDex.Bonzo_Old]: {
       factoryAddress: '0x822b0bE4958ab5b4A48DA3c5f68Fc54846093618',
       depositGuard: {
         address: '0xCEc8716cdd60856eaCaa74d499Abd14AE34B7dA8', // with HTS Wrapping new
@@ -721,7 +748,7 @@ export const addressConfig: Record<SupportedChainId, Config> = {
       vaultDeployerAddress: '0xC159b19C5bd0E4a0709eC13C1303Ff2Bb67F7145',
       isAlgebra: false,
     },
-    [SupportedDex.Aux]: {
+    [SupportedDex.Aux_Old]: {
       factoryAddress: '0x3A85eDF32EF87A67771A9Be4a0B93a07987FbBD6',
       depositGuard: {
         address: '0x7F4045Dc51EA17F33a8695c7C98E83da58c6418f',
@@ -1209,10 +1236,10 @@ export const MULTICALL_ADDRESSES: Partial<Record<SupportedChainId, string>> = {
   [SupportedChainId.arbitrum]: '0xd9e7c0932a7D3e40Db3Fe78d95A3ED375a37Ab1a',
   [SupportedChainId.base_sepolia]: '0xd867e273eAbD6c853fCd0Ca0bFB6a3aE6491d2C1',
   [SupportedChainId.berachain]: '0x89ff70257bc747F310bB538eeFC46aDD763e75d8',
-  [SupportedChainId.botanix]: "0xE89F840427D043ED96d70D3b63916776216f55D6",
+  [SupportedChainId.botanix]: '0xE89F840427D043ED96d70D3b63916776216f55D6',
   [SupportedChainId.citrea]: '0xa730caa84b6e72bb51ed5b2a1b08bc6031a95294',
   [SupportedChainId.citrea_testnet]: '0xB4F9b6b019E75CBe51af4425b2Fc12797e2Ee2a1',
-  [SupportedChainId.cronos]: "0x088ee1FB556Cbd24383AFE3ED9812235Ee931e13",
+  [SupportedChainId.cronos]: '0x088ee1FB556Cbd24383AFE3ED9812235Ee931e13',
   [SupportedChainId.haven1_devnet]: '0xe573920139a208989d83C57ea48837C6285F2cd3',
   [SupportedChainId.fantom]: '0xd9e7c0932a7D3e40Db3Fe78d95A3ED375a37Ab1a',
   [SupportedChainId.flow]: '0xA41Fef85d7a7DebAD0CC265Ad514716C52919559',

@@ -91,10 +91,10 @@ export async function depositWithHtsWrapping(
   const jsonProvider = signer.provider as JsonRpcProvider;
   const { chainId, vault } = await validateVaultData(vaultAddress, jsonProvider, dex);
 
-  // This function is only applicable for BONZO vaults on Hedera
-  if (dex !== SupportedDex.Bonzo || chainId !== SupportedChainId.hedera) {
+  // This function is only applicable for Bonzo vaults on Hedera
+  if ((dex !== SupportedDex.Bonzo && dex !== SupportedDex.Bonzo_Old) || chainId !== SupportedChainId.hedera) {
     throw new Error(
-      `depositWithHtsWrapping is only supported for Bonzo vaults on Hedera. Got dex: ${dex}, chainId: ${chainId}`,
+      `depositWithHtsWrapping is only supported for Bonzo or Bonzo_Old vaults on Hedera. Got dex: ${dex}, chainId: ${chainId}`,
     );
   }
   const vaultDeployerAddress = getVaultDeployer(vaultAddress, chainId, dex);

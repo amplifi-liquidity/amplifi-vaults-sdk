@@ -396,9 +396,9 @@ const txnDetails = await withdraw(
 
 <br/>
 
-> **Note:** This function is only available for Bonzo vaults on the Hedera chain. Using it with other vaults or chains will throw an error.
+> **Note:** This function is only available for Bonzo and Bonzo_Old vaults on the Hedera chain. Using it with other vaults or chains will throw an error.
 
-This function facilitates withdrawals from Bonzo vaults on Hedera with automatic unwrapping of HTS tokens to their ERC20 counterparts. If the vault tokens are HTS wrapped, they will be automatically converted to ERC20 tokens during withdrawal. Ensure to use the `approveVaultToken()` function before invoking this function.
+This function facilitates withdrawals from Bonzo and Bonzo_Old vaults on Hedera with automatic unwrapping of HTS tokens to their ERC20 counterparts. If the vault tokens are HTS wrapped, they will be automatically converted to ERC20 tokens during withdrawal. Ensure to use the `approveVaultToken()` function before invoking this function.
 
 ```typescript
 import { getUserBalance, withdrawWithErc20Wrapping, approveVaultToken, SupportedDex } from '@amplifi-liquidity/amplifi-vaults-sdk';
@@ -445,9 +445,9 @@ const txnDetails = await withdrawWithErc20Wrapping(
 
 <br/>
 
-> **Note:** This function is only available for Bonzo vaults on the Hedera chain. Using it with other vaults or chains will throw an error.
+> **Note:** This function is only available for Bonzo and Bonzo_Old vaults on the Hedera chain. Using it with other vaults or chains will throw an error.
 
-This function facilitates withdrawals from Bonzo vaults on Hedera with automatic unwrapping of HTS tokens to their ERC20 counterparts, while also forwarding the native token (HBAR) directly to the user instead of wrapped HBAR. This is useful when one of the vault tokens is wrapped HBAR and you want to receive native HBAR. Ensure to use the `approveVaultToken()` function before invoking this function.
+This function facilitates withdrawals from Bonzo and Bonzo_Old vaults on Hedera with automatic unwrapping of HTS tokens to their ERC20 counterparts, while also forwarding the native token (HBAR) directly to the user instead of wrapped HBAR. This is useful when one of the vault tokens is wrapped HBAR and you want to receive native HBAR. Ensure to use the `approveVaultToken()` function before invoking this function.
 
 ```typescript
 import { getUserBalance, withdrawNativeTokenWithErc20Wrapping, approveVaultToken, SupportedDex } from '@amplifi-liquidity/amplifi-vaults-sdk';
@@ -1321,9 +1321,11 @@ enum SupportedDex {
   Ascent = 'Ascent',
   Atlantis = 'Anlantis',
   Aux = 'Aux',
+  Aux_Old = 'Aux_Old',
   Bitzy = 'Bitzy',
   Blueprint = 'Blueprint',
   Bonzo = 'Bonzo',
+  Bonzo_Old = 'Bonzo_Old',
   Cleo = 'Cleo',
   Crust = 'Crust',
   Equalizer = 'Equalizer',
@@ -1354,6 +1356,7 @@ enum SupportedDex {
   Retro = 'Retro',
   Satsuma = 'Satsuma',
   SaucerSwap = 'SaucerSwap',
+  SaucerSwap_Old = 'SaucerSwap_Old',
   Snap = 'Snap',
   SparkDex = 'SparkDex',
   SparkDexV1 = 'SparkDexV1',

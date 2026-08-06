@@ -490,12 +490,33 @@ export const graphUrls: Record<SupportedChainId, dexGraph> = {
   },
   [SupportedChainId.hedera]: {
     [SupportedDex.SaucerSwap]: {
+      url: 'https://api.goldsky.com/api/public/project_clynrq1h8gam301xx6vgngo9p/subgraphs/g2/hedera-v2-saucerswap-1.2/gn',
+      publishedUrl:
+        'https://api.goldsky.com/api/public/project_clynrq1h8gam301xx6vgngo9p/subgraphs/g2/hedera-v2-saucerswap-1.2/gn',
+      supportsCollectFees: true,
+      version: 2,
+    },
+    [SupportedDex.Bonzo]: {
+      url: 'https://api.goldsky.com/api/public/project_clynrq1h8gam301xx6vgngo9p/subgraphs/g2/hedera-v2-bonzo-1.2/gn',
+      publishedUrl:
+        'https://api.goldsky.com/api/public/project_clynrq1h8gam301xx6vgngo9p/subgraphs/g2/hedera-v2-bonzo-1.2/gn',
+      supportsCollectFees: true,
+      version: 2,
+    },
+    [SupportedDex.Aux]: {
+      url: 'https://api.goldsky.com/api/public/project_clynrq1h8gam301xx6vgngo9p/subgraphs/g2/hedera-v2-aux-1.2/gn',
+      publishedUrl:
+        'https://api.goldsky.com/api/public/project_clynrq1h8gam301xx6vgngo9p/subgraphs/g2/hedera-v2-aux-1.2/gn',
+      supportsCollectFees: true,
+      version: 2,
+    },
+    [SupportedDex.SaucerSwap_Old]: {
       url: 'https://api.goldsky.com/api/public/project_clynrq1h8gam301xx6vgngo9p/subgraphs/g2/hedera-v1-saucerswap/gn',
       publishedUrl:
         'https://api.goldsky.com/api/public/project_clynrq1h8gam301xx6vgngo9p/subgraphs/g2/hedera-v1-saucerswap/gn',
       supportsCollectFees: true,
     },
-    [SupportedDex.Bonzo]: {
+    [SupportedDex.Bonzo_Old]: {
       url: 'https://api.goldsky.com/api/public/project_clynrq1h8gam301xx6vgngo9p/subgraphs/g2/hedera-v2-bonzo/gn',
       publishedUrl:
         'https://api.goldsky.com/api/public/project_clynrq1h8gam301xx6vgngo9p/subgraphs/g2/hedera-v2-bonzo/gn',
@@ -503,7 +524,7 @@ export const graphUrls: Record<SupportedChainId, dexGraph> = {
       version: 2,
       supportsExtendedFeeAprs: true,
     },
-    [SupportedDex.Aux]: {
+    [SupportedDex.Aux_Old]: {
       url: 'https://api.goldsky.com/api/public/project_clynrq1h8gam301xx6vgngo9p/subgraphs/g2/hedera-v2-aux/gn',
       publishedUrl:
         'https://api.goldsky.com/api/public/project_clynrq1h8gam301xx6vgngo9p/subgraphs/g2/hedera-v2-aux/gn',
