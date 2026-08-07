@@ -27,9 +27,9 @@ export async function withdrawWithErc20Wrapping(
   const { chainId, vault } = await validateVaultData(vaultAddress, jsonProvider, dex);
 
   // This function is only applicable for Bonzo vaults on Hedera
-  if ((dex !== SupportedDex.Bonzo && dex !== SupportedDex.Bonzo_Old) || chainId !== SupportedChainId.hedera) {
+  if ((dex !== SupportedDex.Bonzo && dex !== SupportedDex.BonzoV2) || chainId !== SupportedChainId.hedera) {
     throw new Error(
-      `withdrawWithErc20Wrapping is only supported for Bonzo vaults on Hedera. Got dex: ${dex}, chainId: ${chainId}`,
+      `withdrawWithErc20Wrapping is only supported for Bonzo or BonzoV2 vaults on Hedera. Got dex: ${dex}, chainId: ${chainId}`,
     );
   }
 
@@ -127,9 +127,9 @@ export async function withdrawNativeTokenWithErc20Wrapping(
   const { chainId, vault } = await validateVaultData(vaultAddress, jsonProvider, dex);
 
   // This function is only applicable for Bonzo vaults on Hedera
-  if ((dex !== SupportedDex.Bonzo && dex !== SupportedDex.Bonzo_Old) || chainId !== SupportedChainId.hedera) {
+  if ((dex !== SupportedDex.Bonzo && dex !== SupportedDex.BonzoV2) || chainId !== SupportedChainId.hedera) {
     throw new Error(
-      `withdrawNativeTokenWithErc20Wrapping is only supported for Bonzo or Bonzo_Old vaults on Hedera. Got dex: ${dex}, chainId: ${chainId}`,
+      `withdrawNativeTokenWithErc20Wrapping is only supported for Bonzo or BonzoV2 vaults on Hedera. Got dex: ${dex}, chainId: ${chainId}`,
     );
   }
 
