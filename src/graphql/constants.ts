@@ -744,6 +744,14 @@ export const graphUrls: Record<SupportedChainId, dexGraph> = {
       supportsCollectFees: true,
     },
   },
+  [SupportedChainId.robinhood]: {
+    [SupportedDex.KittyPunch]: {
+      url: 'https://api.goldsky.com/api/public/project_clynrq1h8gam301xx6vgngo9p/subgraphs/g2/robinhood-v2-kittypunch/gn',
+      publishedUrl: 'https://api.goldsky.com/api/public/project_clynrq1h8gam301xx6vgngo9p/subgraphs/g2/robinhood-v2-kittypunch/gn',
+      supportsCollectFees: true,
+      version: 2,
+    },
+  },
   [SupportedChainId.rootstock]: {
     [SupportedDex.UniswapV3]: {
       url: 'https://api.studio.thegraph.com/query/88584/rootstock-v1/version/latest',
