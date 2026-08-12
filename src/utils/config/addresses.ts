@@ -1051,6 +1051,17 @@ export const addressConfig: Record<SupportedChainId, Config> = {
       isAlgebra: false,
     },
   },
+  [SupportedChainId.robinhood]: {
+    [SupportedDex.KittyPunch]: {
+      factoryAddress: '0x8cCd02E769e6A668a447Bd15e134C31bEccd8182',
+      depositGuard: {
+        address: '0xe89f840427d043ed96d70d3b63916776216f55d6',
+        version: 2,
+      },
+      vaultDeployerAddress: '0x89EC5589c030FcEf8c29E7EeC491D2E73b53A623',
+      isAlgebra: false,
+    },
+  },
   [SupportedChainId.rootstock]: {
     [SupportedDex.UniswapV3]: {
       factoryAddress: '0x8cCd02E769e6A668a447Bd15e134C31bEccd8182',
