@@ -502,6 +502,7 @@ export const graphUrls: Record<SupportedChainId, dexGraph> = {
         'https://api.goldsky.com/api/public/project_clynrq1h8gam301xx6vgngo9p/subgraphs/g2/hedera-v2-bonzo-1.2/gn',
       supportsCollectFees: true,
       version: 2,
+      supportsExtendedFeeAprs: true,
     },
     [SupportedDex.AuxV2]: {
       url: 'https://api.goldsky.com/api/public/project_clynrq1h8gam301xx6vgngo9p/subgraphs/g2/hedera-v2-aux-1.2/gn',
