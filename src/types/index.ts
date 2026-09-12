@@ -129,7 +129,6 @@ export enum SupportedDex {
   TrebleswapV2 = 'TrebleswapV2',
   Ubeswap = 'Ubeswap',
   UniswapNew = 'Uniswap New',
-  UniswapV2 = 'UniswapV2',
   UniswapV3 = 'Uniswap V3',
   Velocore = 'Velocore',
   Velodrome = 'Velodrome',

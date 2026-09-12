@@ -17,10 +17,10 @@ afterEach(() => {
   else process.env.SUBGRAPH_API_KEY = originalApiKey;
 });
 
-describe('Celo UniswapV2', () => {
+describe('Celo UniswapNew', () => {
   it('resolves the new factory and deposit guard alongside the older deployment', () => {
     expect(getConfigByFactory(chainId, '0x0c7f01223caa3011ff59ae36a707da5c78d6ae38')).toMatchObject({
-      dex: SupportedDex.UniswapV2,
+      dex: SupportedDex.UniswapNew,
       depositGuardAddress: '0x7F4045Dc51EA17F33a8695c7C98E83da58c6418f',
       depositGuardVersion: 2,
       vaultDeployerAddress: '0xfAcD9c86f7766A5171bb0F9927De808929429A47',
@@ -36,7 +36,7 @@ describe('Celo UniswapV2', () => {
 
   it.each([undefined, 'test-api-key'])('resolves URLs with SUBGRAPH_API_KEY=%s', (apiKey) => {
     if (apiKey) process.env.SUBGRAPH_API_KEY = apiKey;
-    expect(getGraphUrls(chainId, SupportedDex.UniswapV2, true)).toMatchObject({
+    expect(getGraphUrls(chainId, SupportedDex.UniswapNew, true)).toMatchObject({
       url: endpoint,
       publishedUrl: apiKey
         ? 'https://gateway.thegraph.com/api/test-api-key/deployments/id/QmPwspVsTuhRkLBmsV4d95WuD5WFpWCFgTncvgbNT9KNYa'
