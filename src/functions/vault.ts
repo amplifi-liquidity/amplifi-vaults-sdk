@@ -93,7 +93,7 @@ async function sendVaultsByTokensRequest(
   return graphqlRequest<VaultsByTokensQueryData, { addressTokenA: string; addressTokenB: string }>(url, query, {
     addressTokenA: token1,
     addressTokenB: token2,
-  }, isAmplifiHosted).then(({ ichiVaults }) => ichiVaults);
+  }, isAmplifiHosted).then(({ ichiVaults }) => ichiVaults.map(normalizeVaultData));
 }
 async function sendVaultsByPoolQueryRequest(url: string, poolAddress: string, query: string, isAmplifiHosted?: boolean): Promise<string[]> {
   return graphqlRequest<VaultsByPoolQueryData, { poolAddress: string }>(url, query, {
@@ -161,7 +161,7 @@ async function getVaultsByTokensAB(
   tokenA: string,
   tokenB: string,
 ): Promise<VaultsByTokensQueryData['ichiVaults']> {
-  const key = `vaultByTokens-${chainId}-${tokenA}-${tokenB}`;
+  const key = `vaultByTokens-${chainId}-${dex}-${tokenA}-${tokenB}`;
   const cachedData = cache.get(key);
   if (cachedData) {
     return cachedData as VaultsByTokensQueryData['ichiVaults'];
@@ -217,7 +217,7 @@ export async function getVaultsByPool(
   chainId: SupportedChainId,
   dex: SupportedDex,
 ): Promise<VaultsByPoolQueryData['deployICHIVaults']> {
-  const key = `pool-${chainId}-${poolAddress}`;
+  const key = `pool-${chainId}-${dex}-${poolAddress}`;
   const cachedData = cache.get(key);
   if (cachedData) {
     return cachedData as VaultsByPoolQueryData['deployICHIVaults'];
