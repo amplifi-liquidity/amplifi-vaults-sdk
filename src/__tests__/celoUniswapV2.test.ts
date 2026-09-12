@@ -25,7 +25,8 @@ describe('Celo UniswapV2', () => {
       depositGuardVersion: 2,
       vaultDeployerAddress: '0xfAcD9c86f7766A5171bb0F9927De808929429A47',
       graphUrl: endpoint,
-      publishedUrl: endpoint,
+      publishedUrl:
+        'https://gateway.thegraph.com/api/[api-key]/deployments/id/QmPwspVsTuhRkLBmsV4d95WuD5WFpWCFgTncvgbNT9KNYa',
       version: 2,
       supportsCollectFees: true,
       isAlgebra: false,
@@ -33,11 +34,13 @@ describe('Celo UniswapV2', () => {
     expect(getConfigByFactory(chainId, '0x9FAb4bdD4E05f5C023CCC85D2071b49791D7418F')?.dex).toBe(SupportedDex.UniswapV3);
   });
 
-  it.each([undefined, 'test-api-key'])('uses Studio with SUBGRAPH_API_KEY=%s', (apiKey) => {
+  it.each([undefined, 'test-api-key'])('resolves URLs with SUBGRAPH_API_KEY=%s', (apiKey) => {
     if (apiKey) process.env.SUBGRAPH_API_KEY = apiKey;
     expect(getGraphUrls(chainId, SupportedDex.UniswapV2, true)).toMatchObject({
       url: endpoint,
-      publishedUrl: apiKey ? endpoint : undefined,
+      publishedUrl: apiKey
+        ? 'https://gateway.thegraph.com/api/test-api-key/deployments/id/QmPwspVsTuhRkLBmsV4d95WuD5WFpWCFgTncvgbNT9KNYa'
+        : undefined,
       version: 2,
     });
   });

@@ -350,8 +350,8 @@ export const graphUrls: Record<SupportedChainId, dexGraph> = {
     },
     [SupportedDex.UniswapV2]: {
       url: 'https://api.studio.thegraph.com/query/88584/celo-v-1-2/version/latest',
-      // Use Studio until a published network endpoint is available.
-      publishedUrl: 'https://api.studio.thegraph.com/query/88584/celo-v-1-2/version/latest',
+      publishedUrl:
+        'https://gateway.thegraph.com/api/[api-key]/deployments/id/QmPwspVsTuhRkLBmsV4d95WuD5WFpWCFgTncvgbNT9KNYa',
       supportsCollectFees: true,
       version: 2,
     },
