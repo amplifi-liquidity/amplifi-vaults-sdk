@@ -348,6 +348,13 @@ export const graphUrls: Record<SupportedChainId, dexGraph> = {
         'https://gateway-arbitrum.network.thegraph.com/api/[api-key]/subgraphs/id/7dD1q2C5qCXmQpGCgnUsHmFaufD9c9qfppNoeEjEfkLm',
       supportsCollectFees: true,
     },
+    [SupportedDex.UniswapNew]: {
+      url: 'https://api.studio.thegraph.com/query/88584/celo-v-1-2/version/latest',
+      publishedUrl:
+        'https://gateway.thegraph.com/api/[api-key]/deployments/id/QmPwspVsTuhRkLBmsV4d95WuD5WFpWCFgTncvgbNT9KNYa',
+      supportsCollectFees: true,
+      version: 2,
+    },
     [SupportedDex.Velodrome]: {
       url: 'https://api.studio.thegraph.com/query/88584/celo-v-3-velodrome/version/latest',
       publishedUrl:

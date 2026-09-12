@@ -511,6 +511,15 @@ export const addressConfig: Record<SupportedChainId, Config> = {
       vaultDeployerAddress: '0xfAcD9c86f7766A5171bb0F9927De808929429A47',
       isAlgebra: false,
     },
+    [SupportedDex.UniswapNew]: {
+      factoryAddress: '0x0C7F01223caA3011ff59Ae36a707Da5c78D6Ae38',
+      depositGuard: {
+        address: '0x7F4045Dc51EA17F33a8695c7C98E83da58c6418f',
+        version: 2,
+      },
+      vaultDeployerAddress: '0xfAcD9c86f7766A5171bb0F9927De808929429A47',
+      isAlgebra: false,
+    },
     [SupportedDex.Velodrome]: {
       factoryAddress: '0x82DcA62C4B5Dd28Cc85CE8Ae3B170Ce020e33870',
       depositGuard: {
