@@ -32,13 +32,13 @@ export async function _getAllEvents(
   dex: SupportedDex,
   days?: number,
 ): Promise<VaultState[]> {
-  const key = `allevents-${chainId}-${vaultAddress}-${days}`;
+  const key = `allevents-${chainId}-${dex}-${vaultAddress}-${days}`;
   const cachedData = cache.get(key);
   if (cachedData) {
     return cachedData as Fees[];
   }
 
-  const ttl = 120000;
+  const ttl = 120; // NodeCache uses seconds: two minutes.
   const { publishedUrl, url, isAmplifiHosted } = getGraphUrls(chainId, dex, true);
   const currTimestamp = Date.now();
   const startTimestamp = days
@@ -71,7 +71,13 @@ export async function _getAllEvents(
     let result;
     try {
       if (publishedUrl) {
-        result = await sendAllEventsQueryRequest(publishedUrl, vaultAddress, startTimestamp, query(lastTimestamps), isAmplifiHosted);
+        result = await sendAllEventsQueryRequest(
+          publishedUrl,
+          vaultAddress,
+          startTimestamp,
+          query(lastTimestamps),
+          isAmplifiHosted,
+        );
       } else {
         throw new Error(`Published URL is invalid for dex ${dex} on chain ${chainId}`);
       }
@@ -159,13 +165,13 @@ export async function _getRebalances(
   dex: SupportedDex,
   days?: number,
 ): Promise<Fees[]> {
-  const key = `rebalances-${chainId}-${vaultAddress}-${days}`;
+  const key = `rebalances-${chainId}-${dex}-${vaultAddress}-${days}`;
   const cachedData = cache.get(key);
   if (cachedData) {
     return cachedData as Fees[];
   }
 
-  const ttl = 120000;
+  const ttl = 120; // NodeCache uses seconds: two minutes.
   const { publishedUrl, url, isAmplifiHosted } = getGraphUrls(chainId, dex, true);
 
   const currTimestamp = Date.now();
@@ -228,19 +234,19 @@ export async function _getFeesCollectedEvents(
   dex: SupportedDex,
   days?: number,
 ): Promise<Fees[]> {
-  const key = `fees-${chainId}-${vaultAddress}-${days}`;
+  const key = `fees-${chainId}-${dex}-${vaultAddress}-${days}`;
   const cachedData = cache.get(key);
   if (cachedData) {
     return cachedData as Fees[];
   }
 
-  const ttl = 120000;
+  const ttl = 120; // NodeCache uses seconds: two minutes.
   const { publishedUrl, url, isAmplifiHosted } = getGraphUrls(chainId, dex, true);
 
   const supportsCollectFees = graphUrls[chainId as SupportedChainId]![dex]?.supportsCollectFees;
   if (!supportsCollectFees) {
     const result = [] as unknown as Promise<Fees[]>;
-    cache.set(key, result, 24 * 60 * 60 * 1000);
+    cache.set(key, result, 24 * 60 * 60);
     return result;
   }
 
@@ -308,13 +314,13 @@ export async function _getDeposits(
   dex: SupportedDex,
   days?: number,
 ): Promise<VaultTransactionEvent[]> {
-  const key = `deposits-${chainId}-${vaultAddress}-${days}`;
+  const key = `deposits-${chainId}-${dex}-${vaultAddress}-${days}`;
   const cachedData = cache.get(key);
   if (cachedData) {
     return cachedData as VaultTransactionEvent[];
   }
 
-  const ttl = 120000;
+  const ttl = 120; // NodeCache uses seconds: two minutes.
   const { publishedUrl, url, isAmplifiHosted } = getGraphUrls(chainId, dex, true);
 
   const currTimestamp = Date.now();
@@ -377,13 +383,13 @@ export async function _getWithdraws(
   dex: SupportedDex,
   days?: number,
 ): Promise<VaultTransactionEvent[]> {
-  const key = `withdraws-${chainId}-${vaultAddress}-${days}`;
+  const key = `withdraws-${chainId}-${dex}-${vaultAddress}-${days}`;
   const cachedData = cache.get(key);
   if (cachedData) {
     return cachedData as VaultTransactionEvent[];
   }
 
-  const ttl = 120000;
+  const ttl = 120; // NodeCache uses seconds: two minutes.
   const { publishedUrl, url, isAmplifiHosted } = getGraphUrls(chainId, dex, true);
 
   const currTimestamp = Date.now();
@@ -446,13 +452,13 @@ export async function _getAllVaultEvents(
   dex: SupportedDex,
   days?: number,
 ): Promise<VaultState[]> {
-  const key = `allEvents-${chainId}-${vaultAddress}`;
+  const key = `allEvents-${chainId}-${dex}-${vaultAddress}-${days}`;
   const cachedData = cache.get(key);
   if (cachedData) {
     return cachedData as VaultState[];
   }
 
-  const ttl = 120000;
+  const ttl = 120; // NodeCache uses seconds: two minutes.
   const allEvents = await _getAllEvents(vaultAddress, chainId, dex, days);
   const result = allEvents.sort(
     (a, b) => Number(b.createdAtTimestamp) - Number(a.createdAtTimestamp), // recent events first
