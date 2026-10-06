@@ -50,11 +50,11 @@ export async function getVaultMetrics(
   let currTvl = 0;
   let currentDtrPercent = 0;
   try {
-    // Parallelize contract calls
+    // Read supply live with the totals: vault info is cached, so its subgraph totalSupply can be stale.
     const [totalAmountsBN, poolAddress, totalSupplyBN] = await Promise.all([
       vaultContract.getTotalAmounts(),
       vaultContract.pool(),
-      vault.totalSupply != null ? null : vaultContract.totalSupply(),
+      vaultContract.totalSupply(),
     ]);
 
     const totalAmounts = {
@@ -71,9 +71,7 @@ export async function getVaultMetrics(
       ? Number(totalAmounts.total0) + Number(totalAmounts.total1) * price
       : Number(totalAmounts.total1) + Number(totalAmounts.total0) * price;
 
-    const totalSupply = vault.totalSupply != null
-      ? formatBigInt(BigInt(vault.totalSupply), ichiVaultDecimals)
-      : formatBigInt(totalSupplyBN!, ichiVaultDecimals);
+    const totalSupply = formatBigInt(totalSupplyBN, ichiVaultDecimals);
 
     if (Number(totalSupply) === 0) {
       throw new Error(`Could not get LP price. Vault total supply is 0 for vault ${vaultAddress} on chain ${chainId}`);

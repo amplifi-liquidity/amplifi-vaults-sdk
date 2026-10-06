@@ -23,7 +23,7 @@
     "postversion": "git push && git push --tags",
     "prebuild": "rm-cli -r ./dist",
     "prepare": "npm run build",
-    "prepublishOnly": "npm test && npm run lint & yarn build",
+    "prepublishOnly": "npm test && npm run lint && yarn build",
     "preversion": "npm run lint",
     "test": "jest --runInBand --forceExit",
     "version": "npm run format && git add -A src"

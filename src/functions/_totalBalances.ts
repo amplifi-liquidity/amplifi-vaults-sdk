@@ -15,11 +15,11 @@ export async function getTokenDecimals(
   chainId: SupportedChainId,
 ): Promise<number> {
   const key = `token-${chainId}-${tokenAddress}`;
-  const cachedData = cache.get(key);
-  if (cachedData) {
-    return cachedData as number;
+  const cachedData = cache.get<number>(key);
+  if (cachedData !== undefined) {
+    return cachedData;
   }
-  const ttl = 24 * 60 * 60 * 1000;
+  const ttl = 24 * 60 * 60; // NodeCache uses seconds: 24 hours.
   try {
     const tokenContract = getERC20Contract(tokenAddress, jsonProvider);
     const tokenDecimals = Number(await tokenContract.decimals());

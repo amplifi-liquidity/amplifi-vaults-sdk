@@ -47,14 +47,15 @@ export async function getLpApr(
   dex: SupportedDex,
   timeIntervals?: number[],
 ): Promise<(VaultApr | null)[]> {
-  const key = `lpApr-${dex}-${vaultAddress}`;
+  const { chainId, vault } = await validateVaultData(vaultAddress, jsonProvider, dex);
+  const arrDays = timeIntervals && timeIntervals.length > 0 ? timeIntervals : [1, 7, 30];
+  const key = `lpApr-${chainId}-${dex}-${vaultAddress}-${arrDays.join(',')}`;
   const cachedData = cache.get(key);
   if (cachedData) {
     return cachedData as (VaultApr | null)[];
   }
-  const ttl = 30 * 60 * 1000;
+  const ttl = 30 * 60; // NodeCache uses seconds: 30 minutes.
 
-  const { chainId, vault } = await validateVaultData(vaultAddress, jsonProvider, dex);
   getGraphUrls(chainId, dex, true);
 
   const decimals0 = await getTokenDecimals(vault.tokenA, jsonProvider, chainId);
@@ -63,7 +64,6 @@ export async function getLpApr(
 
   const currLpPrice = await getCurrLpPrice(vault, jsonProvider, dex, chainId, isInv, decimals0, decimals1);
 
-  const arrDays = timeIntervals && timeIntervals.length > 0 ? timeIntervals : [1, 7, 30];
   const maxDays = Math.max(...arrDays) + 30;
 
   const result = [] as VaultApr[];
@@ -89,14 +89,15 @@ export async function getLpPriceChange(
   dex: SupportedDex,
   timeIntervals?: number[],
 ): Promise<(PriceChange | null)[]> {
-  const key = `lpPriceChange-${dex}-${vaultAddress}`;
+  const { chainId, vault } = await validateVaultData(vaultAddress, jsonProvider, dex);
+  const arrDays = timeIntervals && timeIntervals.length > 0 ? timeIntervals : [1, 7, 30];
+  const key = `lpPriceChange-${chainId}-${dex}-${vaultAddress}-${arrDays.join(',')}`;
   const cachedData = cache.get(key);
   if (cachedData) {
     return cachedData as (PriceChange | null)[];
   }
-  const ttl = 30 * 60 * 1000;
+  const ttl = 30 * 60; // NodeCache uses seconds: 30 minutes.
 
-  const { chainId, vault } = await validateVaultData(vaultAddress, jsonProvider, dex);
   getGraphUrls(chainId, dex, true);
 
   const decimals0 = await getTokenDecimals(vault.tokenA, jsonProvider, chainId);
@@ -105,7 +106,6 @@ export async function getLpPriceChange(
 
   const currLpPrice = await getCurrLpPrice(vault, jsonProvider, dex, chainId, isInv, decimals0, decimals1);
 
-  const arrDays = timeIntervals && timeIntervals.length > 0 ? timeIntervals : [1, 7, 30];
   const maxDays = Math.max(...arrDays) + 30;
 
   const result = [] as PriceChange[];

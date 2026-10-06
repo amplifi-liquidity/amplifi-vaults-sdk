@@ -30,8 +30,8 @@ export async function getRewardInfo(
     throw new Error(`This function is not supported on chain ${chainId} and dex ${dex}`);
   }
 
-  const key = `rewardinfo-${chainId}-${vaultAddress}`;
-  const ttl = 6 * 60 * 60 * 1000; // 6 hours
+  const key = `rewardinfo-${chainId}-${dex}-${vaultAddress}`;
+  const ttl = 6 * 60 * 60; // NodeCache uses seconds: 6 hours.
   const cachedData = cache.get(key);
   if (cachedData) {
     return cachedData as RewardInfo;
@@ -67,7 +67,7 @@ export async function getAllRewardInfo(chainId: SupportedChainId, dex: Supported
   }
 
   const key = `allrewardinfo-${chainId}-${dex}`;
-  const ttl = 6 * 60 * 60 * 1000; // 6 hours
+  const ttl = 6 * 60 * 60; // NodeCache uses seconds: 6 hours.
   const cachedData = cache.get(key);
   if (cachedData) {
     return cachedData as RewardInfo[];
