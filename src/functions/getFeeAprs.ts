@@ -5,7 +5,7 @@ import { FeeAprData, SupportedDex } from '../types';
 import { validateVaultData } from './vault';
 import { graphUrls } from '../graphql/constants';
 import { getGraphUrls } from '../utils/getGraphUrls';
-import cache from '../utils/cache';
+import cache, { TTL_30M } from '../utils/cache';
 import { FeeAprQueryResponse } from '../types/vaultQueryData';
 import { sendFeeAprQueryRequest } from '../graphql/functions';
 
@@ -28,8 +28,7 @@ export async function getFeeAprs(
     return cachedData as FeeAprData;
   }
 
-  // NodeCache TTL is in seconds: cache for 30 minutes.
-  const ttl = 30 * 60;
+  const ttl = TTL_30M;
 
   // Check if the subgraph is version 2
   const dexConfig = graphUrls[chainId]?.[dex];

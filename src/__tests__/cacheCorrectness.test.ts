@@ -82,7 +82,7 @@ afterEach(() => {
   jest.restoreAllMocks();
 });
 
-test('fee APR is reused within 30 minutes and refetched after its intended expiry', async () => {
+test('fee APR cache expires after 30 minutes', async () => {
   feeRequest.mockResolvedValueOnce(feeResponse(1)).mockResolvedValueOnce(feeResponse(2));
   expect((await getFeeAprs(address, provider(57073), SupportedDex.Reservoir))?.feeApr_1d).toBe(1);
   now += 30 * 60 * 1000 - 1;
@@ -138,7 +138,7 @@ readers.forEach((reader) => {
     const events = [{ id, createdAtTimestamp: '1791270000' }];
     return reader.request === requests.sendAllEventsQueryRequest ? { vaultRebalances: events } : events;
   };
-  test(`${reader.name}: cache expires after two minutes, not 120000 seconds`, async () => {
+  test(`${reader.name}: cache expires after two minutes`, async () => {
     const request = reader.request as jest.Mock;
     request.mockResolvedValueOnce(response('old')).mockResolvedValueOnce(response('new'));
     expect((await reader.read(address, SupportedChainId.ink, SupportedDex.Reservoir, 7))[0]).toMatchObject({

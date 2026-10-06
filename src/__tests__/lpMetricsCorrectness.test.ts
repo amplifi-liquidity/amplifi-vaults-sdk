@@ -97,7 +97,6 @@ helpers.forEach(({ name, read }) => {
     expect(base).not.toEqual(ink);
     expect(currLpPrice).toHaveBeenCalledTimes(2);
 
-    // Results are one row per requested interval, in request order, so neither may reuse another list.
     expect(intervals(await at(SupportedChainId.ink, [30, 7]))).toEqual([30, 7]);
     expect(intervals(await at(SupportedChainId.ink))).toEqual([1, 7, 30]);
     expect(currLpPrice).toHaveBeenCalledTimes(4);

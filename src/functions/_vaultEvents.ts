@@ -17,7 +17,7 @@ import {
 } from '../graphql/queries';
 import { daysToMilliseconds } from '../utils/timestamps';
 import { getGraphUrls } from '../utils/getGraphUrls';
-import cache from '../utils/cache';
+import cache, { TTL_24H, TTL_2M } from '../utils/cache';
 import {
   sendAllEventsQueryRequest,
   sendCollectFeesQueryRequest,
@@ -38,7 +38,7 @@ export async function _getAllEvents(
     return cachedData as Fees[];
   }
 
-  const ttl = 120; // NodeCache uses seconds: two minutes.
+  const ttl = TTL_2M;
   const { publishedUrl, url, isAmplifiHosted } = getGraphUrls(chainId, dex, true);
   const currTimestamp = Date.now();
   const startTimestamp = days
@@ -171,7 +171,7 @@ export async function _getRebalances(
     return cachedData as Fees[];
   }
 
-  const ttl = 120; // NodeCache uses seconds: two minutes.
+  const ttl = TTL_2M;
   const { publishedUrl, url, isAmplifiHosted } = getGraphUrls(chainId, dex, true);
 
   const currTimestamp = Date.now();
@@ -240,13 +240,13 @@ export async function _getFeesCollectedEvents(
     return cachedData as Fees[];
   }
 
-  const ttl = 120; // NodeCache uses seconds: two minutes.
+  const ttl = TTL_2M;
   const { publishedUrl, url, isAmplifiHosted } = getGraphUrls(chainId, dex, true);
 
   const supportsCollectFees = graphUrls[chainId as SupportedChainId]![dex]?.supportsCollectFees;
   if (!supportsCollectFees) {
     const result = [] as unknown as Promise<Fees[]>;
-    cache.set(key, result, 24 * 60 * 60);
+    cache.set(key, result, TTL_24H);
     return result;
   }
 
@@ -320,7 +320,7 @@ export async function _getDeposits(
     return cachedData as VaultTransactionEvent[];
   }
 
-  const ttl = 120; // NodeCache uses seconds: two minutes.
+  const ttl = TTL_2M;
   const { publishedUrl, url, isAmplifiHosted } = getGraphUrls(chainId, dex, true);
 
   const currTimestamp = Date.now();
@@ -389,7 +389,7 @@ export async function _getWithdraws(
     return cachedData as VaultTransactionEvent[];
   }
 
-  const ttl = 120; // NodeCache uses seconds: two minutes.
+  const ttl = TTL_2M;
   const { publishedUrl, url, isAmplifiHosted } = getGraphUrls(chainId, dex, true);
 
   const currTimestamp = Date.now();
@@ -458,7 +458,7 @@ export async function _getAllVaultEvents(
     return cachedData as VaultState[];
   }
 
-  const ttl = 120; // NodeCache uses seconds: two minutes.
+  const ttl = TTL_2M;
   const allEvents = await _getAllEvents(vaultAddress, chainId, dex, days);
   const result = allEvents.sort(
     (a, b) => Number(b.createdAtTimestamp) - Number(a.createdAtTimestamp), // recent events first

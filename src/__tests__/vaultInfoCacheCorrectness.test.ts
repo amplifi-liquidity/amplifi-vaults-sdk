@@ -68,7 +68,7 @@ const cases: { name: string; read: Reader; ttlMs: number }[] = [
 ];
 
 cases.forEach(({ name, read, ttlMs }) => {
-  test(`${name}: cache lives for its intended ${ttlMs / HOUR}h in seconds, not milliseconds-as-seconds`, async () => {
+  test(`${name}: cache lives for ${ttlMs / HOUR}h`, async () => {
     const first = await read(SupportedChainId.ink, SupportedDex.Reservoir);
     const calls = requestCount;
     now += ttlMs - 1;

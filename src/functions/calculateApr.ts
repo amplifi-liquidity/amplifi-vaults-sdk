@@ -9,7 +9,7 @@ import getPrice from '../utils/getPrice';
 import formatBigInt from '../utils/formatBigInt';
 import { getGraphUrls } from '../utils/getGraphUrls';
 import { _getAllVaultEvents, getVaultStateAt } from './_vaultEvents';
-import cache from '../utils/cache';
+import cache, { TTL_30M } from '../utils/cache';
 
 export function getLpPriceAt(
   vaultEvents: VaultState[],
@@ -54,7 +54,7 @@ export async function getLpApr(
   if (cachedData) {
     return cachedData as (VaultApr | null)[];
   }
-  const ttl = 30 * 60; // NodeCache uses seconds: 30 minutes.
+  const ttl = TTL_30M;
 
   getGraphUrls(chainId, dex, true);
 
@@ -96,7 +96,7 @@ export async function getLpPriceChange(
   if (cachedData) {
     return cachedData as (PriceChange | null)[];
   }
-  const ttl = 30 * 60; // NodeCache uses seconds: 30 minutes.
+  const ttl = TTL_30M;
 
   getGraphUrls(chainId, dex, true);
 

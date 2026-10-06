@@ -10,7 +10,7 @@ import {
 import { getIchiVaultContract } from '../contracts';
 import { allRewardVaults, getVaultQuery, vaultByPoolQuery, vaultByTokensQuery } from '../graphql/queries';
 import { getGraphUrls } from '../utils/getGraphUrls';
-import cache from '../utils/cache';
+import cache, { TTL_1H, TTL_6H } from '../utils/cache';
 import { graphqlRequest } from '../graphql/functions';
 
 const chainIdCache = new WeakMap<JsonRpcProvider, SupportedChainId>();
@@ -111,7 +111,7 @@ export async function getIchiVaultInfo(
   jsonProvider?: JsonRpcProvider,
 ): Promise<IchiVault> {
   const key = `vault-${chainId}-${dex}-${vaultAddress}`;
-  const ttl = 6 * 60 * 60; // NodeCache uses seconds: 6 hours.
+  const ttl = TTL_6H;
   const cachedData = cache.get(key);
   if (cachedData) {
     return cachedData as IchiVault;
@@ -167,7 +167,7 @@ async function getVaultsByTokensAB(
     return cachedData as VaultsByTokensQueryData['ichiVaults'];
   }
 
-  const ttl = 60 * 60; // NodeCache uses seconds: 1 hour.
+  const ttl = TTL_1H;
   const { url, publishedUrl, version, isAmplifiHosted } = getGraphUrls(chainId, dex, true);
 
   const strVaultByTokensQuery = vaultByTokensQuery(version);
@@ -224,7 +224,7 @@ export async function getVaultsByPool(
   }
 
   const { url, publishedUrl, isAmplifiHosted } = getGraphUrls(chainId, dex, true);
-  const ttl = 60 * 60; // NodeCache uses seconds: 1 hour.
+  const ttl = TTL_1H;
 
   try {
     if (publishedUrl) {
@@ -273,7 +273,7 @@ export async function getAllRewardVaults(chainId: SupportedChainId, dex: Support
   }
 
   const { url, publishedUrl, isAmplifiHosted } = getGraphUrls(chainId, dex, true);
-  const ttl = 60 * 60; // NodeCache uses seconds: 1 hour.
+  const ttl = TTL_1H;
 
   try {
     if (publishedUrl) {

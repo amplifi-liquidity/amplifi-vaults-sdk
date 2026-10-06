@@ -4,7 +4,7 @@
 /* eslint-disable import/prefer-default-export */
 
 import { RewardInfo, SupportedChainId, SupportedDex } from '../types';
-import cache from '../utils/cache';
+import cache, { TTL_6H } from '../utils/cache';
 import { getGraphUrls } from '../utils/getGraphUrls';
 import { allRewardInfoQuery, rewardInfoQuery } from '../graphql/queries';
 import { AllRewardInfoQueryResponse, RewardInfoQueryResponse } from '../types/vaultQueryData';
@@ -31,7 +31,7 @@ export async function getRewardInfo(
   }
 
   const key = `rewardinfo-${chainId}-${dex}-${vaultAddress}`;
-  const ttl = 6 * 60 * 60; // NodeCache uses seconds: 6 hours.
+  const ttl = TTL_6H;
   const cachedData = cache.get(key);
   if (cachedData) {
     return cachedData as RewardInfo;
@@ -67,7 +67,7 @@ export async function getAllRewardInfo(chainId: SupportedChainId, dex: Supported
   }
 
   const key = `allrewardinfo-${chainId}-${dex}`;
-  const ttl = 6 * 60 * 60; // NodeCache uses seconds: 6 hours.
+  const ttl = TTL_6H;
   const cachedData = cache.get(key);
   if (cachedData) {
     return cachedData as RewardInfo[];
