@@ -7,7 +7,7 @@ import { getERC20Contract, getIchiVaultContract } from '../contracts';
 import { IchiVault, SupportedChainId, TotalAmounts, TotalAmountsBN, ichiVaultDecimals } from '../types';
 import formatBigInt from '../utils/formatBigInt';
 // eslint-disable-next-line import/no-cycle
-import cache from '../utils/cache';
+import cache, { TTL_24H } from '../utils/cache';
 
 export async function getTokenDecimals(
   tokenAddress: string,
@@ -15,11 +15,11 @@ export async function getTokenDecimals(
   chainId: SupportedChainId,
 ): Promise<number> {
   const key = `token-${chainId}-${tokenAddress}`;
-  const cachedData = cache.get(key);
-  if (cachedData) {
-    return cachedData as number;
+  const cachedData = cache.get<number>(key);
+  if (cachedData !== undefined) {
+    return cachedData;
   }
-  const ttl = 24 * 60 * 60 * 1000;
+  const ttl = TTL_24H;
   try {
     const tokenContract = getERC20Contract(tokenAddress, jsonProvider);
     const tokenDecimals = Number(await tokenContract.decimals());

@@ -5,7 +5,7 @@ import { FeeAprData, SupportedDex } from '../types';
 import { validateVaultData } from './vault';
 import { graphUrls } from '../graphql/constants';
 import { getGraphUrls } from '../utils/getGraphUrls';
-import cache from '../utils/cache';
+import cache, { TTL_30M } from '../utils/cache';
 import { FeeAprQueryResponse } from '../types/vaultQueryData';
 import { sendFeeAprQueryRequest } from '../graphql/functions';
 
@@ -21,16 +21,14 @@ export async function getFeeAprs(
   jsonProvider: JsonRpcProvider,
   dex: SupportedDex,
 ): Promise<FeeAprData | null> {
-  const key = `feeAprs-${dex}-${vaultAddress}`;
+  const { chainId } = await validateVaultData(vaultAddress, jsonProvider, dex);
+  const key = `feeAprs-${chainId}-${dex}-${vaultAddress}`;
   const cachedData = cache.get(key);
   if (cachedData) {
     return cachedData as FeeAprData;
   }
 
-  // Cache for 30 minutes
-  const ttl = 30 * 60 * 1000;
-
-  const { chainId } = await validateVaultData(vaultAddress, jsonProvider, dex);
+  const ttl = TTL_30M;
 
   // Check if the subgraph is version 2
   const dexConfig = graphUrls[chainId]?.[dex];
@@ -67,13 +65,13 @@ export async function getFeeAprs(
     }
 
     const feeAprData: FeeAprData = {
-      feeApr_1d: result.ichiVault.feeApr_1d ? result.ichiVault.feeApr_1d : null,
-      feeApr_3d: result.ichiVault.feeApr_3d ? result.ichiVault.feeApr_3d : null,
-      feeApr_7d: result.ichiVault.feeApr_7d ? result.ichiVault.feeApr_7d : null,
-      feeApr_30d: result.ichiVault.feeApr_30d ? result.ichiVault.feeApr_30d : null,
+      feeApr_1d: result.ichiVault.feeApr_1d ?? null,
+      feeApr_3d: result.ichiVault.feeApr_3d ?? null,
+      feeApr_7d: result.ichiVault.feeApr_7d ?? null,
+      feeApr_30d: result.ichiVault.feeApr_30d ?? null,
       ...(extended && {
-        feeApr_60d: result.ichiVault.feeApr_60d ? result.ichiVault.feeApr_60d : null,
-        feeApr_90d: result.ichiVault.feeApr_90d ? result.ichiVault.feeApr_90d : null,
+        feeApr_60d: result.ichiVault.feeApr_60d ?? null,
+        feeApr_90d: result.ichiVault.feeApr_90d ?? null,
       }),
     };
 

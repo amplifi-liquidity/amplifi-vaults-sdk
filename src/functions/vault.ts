@@ -10,7 +10,7 @@ import {
 import { getIchiVaultContract } from '../contracts';
 import { allRewardVaults, getVaultQuery, vaultByPoolQuery, vaultByTokensQuery } from '../graphql/queries';
 import { getGraphUrls } from '../utils/getGraphUrls';
-import cache from '../utils/cache';
+import cache, { TTL_1H, TTL_6H } from '../utils/cache';
 import { graphqlRequest } from '../graphql/functions';
 
 const chainIdCache = new WeakMap<JsonRpcProvider, SupportedChainId>();
@@ -110,8 +110,8 @@ export async function getIchiVaultInfo(
   vaultAddress: string,
   jsonProvider?: JsonRpcProvider,
 ): Promise<IchiVault> {
-  const key = `vault-${chainId}-${vaultAddress}`;
-  const ttl = 6 * 60 * 60 * 1000; // 6 hours
+  const key = `vault-${chainId}-${dex}-${vaultAddress}`;
+  const ttl = TTL_6H;
   const cachedData = cache.get(key);
   if (cachedData) {
     return cachedData as IchiVault;
@@ -161,13 +161,13 @@ async function getVaultsByTokensAB(
   tokenA: string,
   tokenB: string,
 ): Promise<VaultsByTokensQueryData['ichiVaults']> {
-  const key = `vaultByTokens-${chainId}-${tokenA}-${tokenB}`;
+  const key = `vaultByTokens-${chainId}-${dex}-${tokenA}-${tokenB}`;
   const cachedData = cache.get(key);
   if (cachedData) {
     return cachedData as VaultsByTokensQueryData['ichiVaults'];
   }
 
-  const ttl = 3600000;
+  const ttl = TTL_1H;
   const { url, publishedUrl, version, isAmplifiHosted } = getGraphUrls(chainId, dex, true);
 
   const strVaultByTokensQuery = vaultByTokensQuery(version);
@@ -217,14 +217,14 @@ export async function getVaultsByPool(
   chainId: SupportedChainId,
   dex: SupportedDex,
 ): Promise<VaultsByPoolQueryData['deployICHIVaults']> {
-  const key = `pool-${chainId}-${poolAddress}`;
+  const key = `pool-${chainId}-${dex}-${poolAddress}`;
   const cachedData = cache.get(key);
   if (cachedData) {
     return cachedData as VaultsByPoolQueryData['deployICHIVaults'];
   }
 
   const { url, publishedUrl, isAmplifiHosted } = getGraphUrls(chainId, dex, true);
-  const ttl = 3600000;
+  const ttl = TTL_1H;
 
   try {
     if (publishedUrl) {
@@ -273,7 +273,7 @@ export async function getAllRewardVaults(chainId: SupportedChainId, dex: Support
   }
 
   const { url, publishedUrl, isAmplifiHosted } = getGraphUrls(chainId, dex, true);
-  const ttl = 3600000;
+  const ttl = TTL_1H;
 
   try {
     if (publishedUrl) {
