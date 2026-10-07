@@ -1,5 +1,4 @@
 /* eslint-env jest */
-/* global BigInt */
 /* eslint-disable no-underscore-dangle */
 import { JsonRpcProvider } from 'ethers';
 import { SupportedChainId, SupportedDex } from '../types';

@@ -4,7 +4,7 @@ import parseBigInt from '../utils/parseBigInt';
 import { IchiVault, SupportedChainId, SupportedDex, ichiVaultDecimals } from '../types';
 import { addressConfig } from '../utils/config/addresses';
 
-// eslint-disable-next-line no-underscore-dangle
+// eslint-disable-next-line no-underscore-dangle, import/prefer-default-export
 export async function _isVaultTokenApproved(
   accountAddress: string,
   shares: string | number | bigint,

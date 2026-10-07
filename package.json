@@ -18,7 +18,8 @@
     "dev": "rollup -c -w",
     "format": "prettier --write \"src/**/*.ts\"",
     "generate": "rm-cli -r ./abis && typechain --target=ethers-v6 \"src/abis/**/*.json\" --out-dir \"abis/types\"",
-    "lint:ts": "eslint --ext .js,.ts --ignore-path .gitignore . --fix",
+    "lint:ts": "eslint --ext .js,.ts --ignore-path .gitignore .",
+    "lint:fix": "eslint --ext .js,.ts --ignore-path .gitignore . --fix",
     "lint": "npm run lint:ts",
     "postversion": "git push && git push --tags",
     "prebuild": "rm-cli -r ./dist",
@@ -26,6 +27,7 @@
     "prepublishOnly": "npm test && npm run lint && yarn build",
     "preversion": "npm run lint",
     "test": "jest --runInBand --forceExit",
+    "test:live": "LIVE_TESTS=1 jest --runInBand --forceExit",
     "version": "npm run format && git add -A src"
   },
   "repository": {
