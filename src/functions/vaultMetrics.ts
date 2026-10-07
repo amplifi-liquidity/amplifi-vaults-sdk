@@ -31,12 +31,13 @@ export async function getVaultMetrics(
   const { chainId, vault } = await validateVaultData(vaultAddress, jsonProvider, dex);
 
   // Use subgraph decimals if available (v2), otherwise fall back to RPC
-  const [decimals0, decimals1] = vault.decimals0 != null && vault.decimals1 != null
-    ? [vault.decimals0, vault.decimals1]
-    : await Promise.all([
-        getTokenDecimals(vault.tokenA, jsonProvider, chainId),
-        getTokenDecimals(vault.tokenB, jsonProvider, chainId),
-      ]);
+  const [decimals0, decimals1] =
+    vault.decimals0 != null && vault.decimals1 != null
+      ? [vault.decimals0, vault.decimals1]
+      : await Promise.all([
+          getTokenDecimals(vault.tokenA, jsonProvider, chainId),
+          getTokenDecimals(vault.tokenB, jsonProvider, chainId),
+        ]);
 
   const isInv = vault.allowTokenB;
   const depositTokenDecimals = isInv ? decimals1 : decimals0;

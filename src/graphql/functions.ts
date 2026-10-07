@@ -102,7 +102,12 @@ export async function sendWithdrawsQueryRequest(
   ).then(({ vaultWithdraws }) => vaultWithdraws);
 }
 
-export async function sendFeeAprQueryRequest(url: string, vaultAddress: string, extended?: boolean, isAmplifiHosted?: boolean): Promise<FeeAprQueryResponse> {
+export async function sendFeeAprQueryRequest(
+  url: string,
+  vaultAddress: string,
+  extended?: boolean,
+  isAmplifiHosted?: boolean,
+): Promise<FeeAprQueryResponse> {
   const query = extended ? extendedFeeAprQuery : feeAprQuery;
   return graphqlRequest<FeeAprQueryResponse, { vaultAddress: string }>(
     url,

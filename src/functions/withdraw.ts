@@ -29,11 +29,7 @@ export async function approveVaultToken(
   const vaultTokenContract = getERC20Contract(vaultAddress, signer);
 
   // eslint-disable-next-line no-nested-ternary
-  const sharesBN = shares
-    ? typeof shares === 'bigint'
-      ? shares
-      : parseBigInt(shares, ichiVaultDecimals)
-    : MaxUint256;
+  const sharesBN = shares ? (typeof shares === 'bigint' ? shares : parseBigInt(shares, ichiVaultDecimals)) : MaxUint256;
 
   const depositGuardAddress = addressConfig[chainId as SupportedChainId]![dex]?.depositGuard.address;
   if (!depositGuardAddress) {
@@ -102,7 +98,8 @@ export async function withdraw(
   }
 
   const sharesBN = typeof shares === 'bigint' ? shares : parseBigInt(shares, 18);
-  const gasLimit = overrides?.gasLimit ?? calculateGasMargin(await vaultContract.withdraw.estimateGas(sharesBN, accountAddress));
+  const gasLimit =
+    overrides?.gasLimit ?? calculateGasMargin(await vaultContract.withdraw.estimateGas(sharesBN, accountAddress));
 
   return vaultContract.withdraw(sharesBN, accountAddress, { ...overrides, gasLimit });
 }

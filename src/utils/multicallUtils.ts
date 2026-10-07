@@ -1,5 +1,4 @@
-import { Contract, Interface, Signer } from 'ethers';
-import { JsonRpcProvider } from 'ethers';
+import { Contract, Interface, JsonRpcProvider, Signer } from 'ethers';
 import { SupportedChainId } from '../types';
 import { MULTICALL_ADDRESSES } from './config/addresses';
 import { getERC20Contract, getIchiVaultContract, getMultiFeeDistributorContract } from '../contracts';
@@ -102,10 +101,7 @@ export function encodeFarmingRewardsCall(farmingContractAddress: string, userAdd
   };
 }
 
-export function decodeTotalAmountsResult(
-  result: Result,
-  vaultAddress: string,
-): { total0: bigint; total1: bigint } {
+export function decodeTotalAmountsResult(result: Result, vaultAddress: string): { total0: bigint; total1: bigint } {
   if (!result.success) {
     throw new Error('Failed to get total amounts');
   }
