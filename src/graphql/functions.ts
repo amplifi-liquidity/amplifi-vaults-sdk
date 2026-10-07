@@ -16,6 +16,15 @@ function getAmplifiHeaders(): Record<string, string> {
   return apiKey ? { 'x-api-key': apiKey } : {};
 }
 
+// Without a deadline a subgraph that accepts the connection but never answers is only cut off
+// by the socket default (~5 min), which stalls batch jobs. Override with SUBGRAPH_REQUEST_TIMEOUT_MS.
+export const DEFAULT_SUBGRAPH_REQUEST_TIMEOUT_MS = 20_000;
+
+function subgraphRequestTimeoutMs(): number {
+  const configured = Number(process.env.SUBGRAPH_REQUEST_TIMEOUT_MS);
+  return Number.isFinite(configured) && configured > 0 ? configured : DEFAULT_SUBGRAPH_REQUEST_TIMEOUT_MS;
+}
+
 export async function graphqlRequest<TResult, TVariables extends Record<string, unknown> = Record<string, unknown>>(
   url: string,
   query: string,
@@ -23,8 +32,13 @@ export async function graphqlRequest<TResult, TVariables extends Record<string, 
   isAmplifiHosted?: boolean,
 ): Promise<TResult> {
   const headers = isAmplifiHosted ? getAmplifiHeaders() : undefined;
-  // graphql-request's request() uses rest args: (url, doc, ...variablesAndHeaders)
-  return request<TResult>(url, query, variables, headers);
+  return request<TResult>({
+    url,
+    document: query,
+    variables,
+    requestHeaders: headers,
+    signal: AbortSignal.timeout(subgraphRequestTimeoutMs()),
+  });
 }
 
 export async function sendAllEventsQueryRequest(
