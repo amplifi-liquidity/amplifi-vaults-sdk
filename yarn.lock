@@ -46,7 +46,6 @@ __metadata:
     jsbi: ^3.1.5
     node-cache: ^5.1.2
     prettier: ^2.8.7
-    rm-cli: ^1.4.2
     rollup: ^2.72.1
     rollup-plugin-terser: ^7.0.2
     ts-jest: ^29.1.0
@@ -2829,13 +2828,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"bluebird@npm:^3.5.1":
-  version: 3.7.2
-  resolution: "bluebird@npm:3.7.2"
-  checksum: 869417503c722e7dc54ca46715f70e15f4d9c602a423a02c825570862d12935be59ed9c7ba34a9b31f186c017c23cac6b54e35446f8353059c101da73eac22ef
-  languageName: node
-  linkType: hard
-
 "bn.js@npm:^4.11.0, bn.js@npm:^4.11.8, bn.js@npm:^4.11.9":
   version: 4.12.3
   resolution: "bn.js@npm:4.12.3"
@@ -4232,13 +4224,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ethereumjs-abi@git+https://github.com/ethereumjs/ethereumjs-abi.git, ethereumjs-abi@npm:^0.6.8":
+"ethereumjs-abi@npm:0.6.8":
   version: 0.6.8
-  resolution: "ethereumjs-abi@git+ssh://git@github.com/ethereumjs/ethereumjs-abi.git#commit=ee3994657fa7a427238e6ba92a84d0b529bbcde0"
+  resolution: "ethereumjs-abi@npm:0.6.8"
   dependencies:
     bn.js: ^4.11.8
     ethereumjs-util: ^6.0.0
-  checksum: ae074be0bb012857ab5d3ae644d1163b908a48dd724b7d2567cfde309dc72222d460438f2411936a70dc949dc604ce1ef7118f7273bd525815579143c907e336
+  checksum: cede2a8ae7c7e04eeaec079c2f925601a25b2ef75cf9230e7c5da63b4ea27883b35447365a47e35c1e831af520973a2252af89022c292c18a09a4607821a366b
   languageName: node
   linkType: hard
 
@@ -4842,7 +4834,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"glob@npm:^7.1.0, glob@npm:^7.1.1, glob@npm:^7.1.3, glob@npm:^7.1.4, glob@npm:^7.1.6":
+"glob@npm:^7.1.1, glob@npm:^7.1.3, glob@npm:^7.1.4, glob@npm:^7.1.6":
   version: 7.2.3
   resolution: "glob@npm:7.2.3"
   dependencies:
@@ -7706,18 +7698,6 @@ __metadata:
   bin:
     rlp: bin/rlp
   checksum: 3db4dfe5c793f40ac7e0be689a1f75d05e6f2ca0c66189aeb62adab8c436b857ab4420a419251ee60370d41d957a55698fc5e23ab1e1b41715f33217bc4bb558
-  languageName: node
-  linkType: hard
-
-"rm-cli@npm:^1.4.2":
-  version: 1.4.2
-  resolution: "rm-cli@npm:1.4.2"
-  dependencies:
-    bluebird: ^3.5.1
-    glob: ^7.1.0
-  bin:
-    rm-cli: ./src/rm-cli.js
-  checksum: a8f09705628e215164056cd14c10130334b208c567f57c0a247e6325bf330a93d4e97cb200059705c04807abf7f7ec7e18551fa7f3a4f29a3250c73ebd5db981
   languageName: node
   linkType: hard
 
