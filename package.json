@@ -41,6 +41,7 @@
   ],
   "author": "Amplifi Liquidity",
   "license": "MIT",
+  "packageManager": "yarn@3.6.4",
   "bugs": {
     "url": "https://github.com/amplifi-liquidity/amplifi-vaults-sdk/issues"
   },
