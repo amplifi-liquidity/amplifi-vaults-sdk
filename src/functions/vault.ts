@@ -78,10 +78,20 @@ async function getVaultInfoFromContract(vaultAddress: string, jsonProvider: Json
   return vault;
 }
 
-async function sendVaultQueryRequest(url: string, vaultAddress: string, query: string, isAmplifiHosted?: boolean): Promise<IchiVault> {
-  return graphqlRequest<VaultQueryData, { vaultAddress: string }>(url, query, {
-    vaultAddress: vaultAddress.toLowerCase(),
-  }, isAmplifiHosted).then(({ ichiVault }) => ichiVault);
+async function sendVaultQueryRequest(
+  url: string,
+  vaultAddress: string,
+  query: string,
+  isAmplifiHosted?: boolean,
+): Promise<IchiVault> {
+  return graphqlRequest<VaultQueryData, { vaultAddress: string }>(
+    url,
+    query,
+    {
+      vaultAddress: vaultAddress.toLowerCase(),
+    },
+    isAmplifiHosted,
+  ).then(({ ichiVault }) => ichiVault);
 }
 async function sendVaultsByTokensRequest(
   url: string,
@@ -90,18 +100,39 @@ async function sendVaultsByTokensRequest(
   query: string,
   isAmplifiHosted?: boolean,
 ): Promise<IchiVault[]> {
-  return graphqlRequest<VaultsByTokensQueryData, { addressTokenA: string; addressTokenB: string }>(url, query, {
-    addressTokenA: token1,
-    addressTokenB: token2,
-  }, isAmplifiHosted).then(({ ichiVaults }) => ichiVaults);
+  return graphqlRequest<VaultsByTokensQueryData, { addressTokenA: string; addressTokenB: string }>(
+    url,
+    query,
+    {
+      addressTokenA: token1,
+      addressTokenB: token2,
+    },
+    isAmplifiHosted,
+  ).then(({ ichiVaults }) => ichiVaults);
 }
-async function sendVaultsByPoolQueryRequest(url: string, poolAddress: string, query: string, isAmplifiHosted?: boolean): Promise<string[]> {
-  return graphqlRequest<VaultsByPoolQueryData, { poolAddress: string }>(url, query, {
-    poolAddress: poolAddress.toLowerCase(),
-  }, isAmplifiHosted).then(({ deployICHIVaults }) => deployICHIVaults);
+async function sendVaultsByPoolQueryRequest(
+  url: string,
+  poolAddress: string,
+  query: string,
+  isAmplifiHosted?: boolean,
+): Promise<string[]> {
+  return graphqlRequest<VaultsByPoolQueryData, { poolAddress: string }>(
+    url,
+    query,
+    {
+      poolAddress: poolAddress.toLowerCase(),
+    },
+    isAmplifiHosted,
+  ).then(({ deployICHIVaults }) => deployICHIVaults);
 }
-async function sendAllRewardVaultsQueryRequest(url: string, query: string, isAmplifiHosted?: boolean): Promise<VaultWithRewards[]> {
-  return graphqlRequest<AllRewardVaultsQueryResponse>(url, query, undefined, isAmplifiHosted).then(({ ichiVaults }) => ichiVaults);
+async function sendAllRewardVaultsQueryRequest(
+  url: string,
+  query: string,
+  isAmplifiHosted?: boolean,
+): Promise<VaultWithRewards[]> {
+  return graphqlRequest<AllRewardVaultsQueryResponse>(url, query, undefined, isAmplifiHosted).then(
+    ({ ichiVaults }) => ichiVaults,
+  );
 }
 
 export async function getIchiVaultInfo(
@@ -174,7 +205,13 @@ async function getVaultsByTokensAB(
 
   try {
     if (publishedUrl) {
-      const result = await sendVaultsByTokensRequest(publishedUrl, tokenA, tokenB, strVaultByTokensQuery, isAmplifiHosted);
+      const result = await sendVaultsByTokensRequest(
+        publishedUrl,
+        tokenA,
+        tokenB,
+        strVaultByTokensQuery,
+        isAmplifiHosted,
+      );
       cache.set(key, result, ttl);
       return result;
     } else {

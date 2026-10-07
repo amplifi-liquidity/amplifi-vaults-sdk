@@ -70,11 +70,7 @@ export async function _getTotalAmounts(
 
 export async function _getTotalSupply(vaultAddress: string, jsonProvider: JsonRpcProvider): Promise<string>;
 
-export async function _getTotalSupply(
-  vaultAddress: string,
-  jsonProvider: JsonRpcProvider,
-  raw: true,
-): Promise<bigint>;
+export async function _getTotalSupply(vaultAddress: string, jsonProvider: JsonRpcProvider, raw: true): Promise<bigint>;
 
 export async function _getTotalSupply(vaultAddress: string, jsonProvider: JsonRpcProvider, raw?: true) {
   try {

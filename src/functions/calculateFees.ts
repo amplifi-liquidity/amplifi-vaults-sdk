@@ -16,9 +16,7 @@ import { _getFeesCollectedEvents, _getRebalances } from './_vaultEvents';
 
 function getCollectedTokenAmountBN(ind: 0 | 1, feesDataset: Fees[]): bigint {
   const amounts =
-    ind === 0
-      ? feesDataset.map((r) => BigInt(r.feeAmount0))
-      : feesDataset.map((r) => BigInt(r.feeAmount1));
+    ind === 0 ? feesDataset.map((r) => BigInt(r.feeAmount0)) : feesDataset.map((r) => BigInt(r.feeAmount1));
   const amountBN = amounts.reduce((total, curr) => total + curr, 0n);
   return amountBN;
 }

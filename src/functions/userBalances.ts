@@ -129,14 +129,24 @@ export async function sendUserBalancesQueryRequest(
   isAmplifiHosted?: boolean,
 ): Promise<UserBalancesQueryData['user']> {
   if (vaultAddress) {
-    return graphqlRequest<UserBalancesQueryData, { accountAddress: string; vaultAddress: string }>(url, query, {
-      accountAddress: accountAddress.toLowerCase(),
-      vaultAddress: vaultAddress.toLowerCase(),
-    }, isAmplifiHosted).then(({ user }) => user);
+    return graphqlRequest<UserBalancesQueryData, { accountAddress: string; vaultAddress: string }>(
+      url,
+      query,
+      {
+        accountAddress: accountAddress.toLowerCase(),
+        vaultAddress: vaultAddress.toLowerCase(),
+      },
+      isAmplifiHosted,
+    ).then(({ user }) => user);
   } else {
-    return graphqlRequest<UserBalancesQueryData, { accountAddress: string }>(url, query, {
-      accountAddress: accountAddress.toLowerCase(),
-    }, isAmplifiHosted).then(({ user }) => user);
+    return graphqlRequest<UserBalancesQueryData, { accountAddress: string }>(
+      url,
+      query,
+      {
+        accountAddress: accountAddress.toLowerCase(),
+      },
+      isAmplifiHosted,
+    ).then(({ user }) => user);
   }
 }
 function storeResult(key: string, result: any) {
@@ -177,7 +187,13 @@ export async function getAllUserBalances(
     const strUserBalancesQuery = getUserBalancesQuery(chainId, dex);
     try {
       if (publishedUrl) {
-        const result = await sendUserBalancesQueryRequest(publishedUrl, accountAddress, strUserBalancesQuery, undefined, isAmplifiHosted);
+        const result = await sendUserBalancesQueryRequest(
+          publishedUrl,
+          accountAddress,
+          strUserBalancesQuery,
+          undefined,
+          isAmplifiHosted,
+        );
         storeResult(key, result);
       } else {
         throw new Error(`Published URL is invalid for dex ${dex} on chain ${chainId}`);
@@ -320,7 +336,13 @@ export async function getAllUserAmounts(
     const strUserBalancesQuery = getUserBalancesQuery(chainId, dex);
     try {
       if (publishedUrl) {
-        const result = await sendUserBalancesQueryRequest(publishedUrl, accountAddress, strUserBalancesQuery, undefined, isAmplifiHosted);
+        const result = await sendUserBalancesQueryRequest(
+          publishedUrl,
+          accountAddress,
+          strUserBalancesQuery,
+          undefined,
+          isAmplifiHosted,
+        );
         storeResult(key, result);
       } else {
         throw new Error(`Published URL is invalid for dex ${dex} on chain ${chainId}`);

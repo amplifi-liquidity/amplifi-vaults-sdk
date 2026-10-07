@@ -11,14 +11,30 @@ import { AllRewardInfoQueryResponse, RewardInfoQueryResponse } from '../types/va
 import { isMfdEnabled } from '../utils/isVelodrome';
 import { graphqlRequest } from '../graphql/functions';
 
-async function sendRewardInfoQueryRequest(url: string, vaultAddress: string, query: string, isAmplifiHosted?: boolean): Promise<RewardInfo> {
-  return graphqlRequest<RewardInfoQueryResponse, { vaultAddress: string }>(url, query, {
-    vaultAddress: vaultAddress.toLowerCase(),
-  }, isAmplifiHosted).then(({ ichiVault }) => ichiVault);
+async function sendRewardInfoQueryRequest(
+  url: string,
+  vaultAddress: string,
+  query: string,
+  isAmplifiHosted?: boolean,
+): Promise<RewardInfo> {
+  return graphqlRequest<RewardInfoQueryResponse, { vaultAddress: string }>(
+    url,
+    query,
+    {
+      vaultAddress: vaultAddress.toLowerCase(),
+    },
+    isAmplifiHosted,
+  ).then(({ ichiVault }) => ichiVault);
 }
 
-async function sendAllRewardInfoQueryRequest(url: string, query: string, isAmplifiHosted?: boolean): Promise<RewardInfo[]> {
-  return graphqlRequest<AllRewardInfoQueryResponse>(url, query, undefined, isAmplifiHosted).then(({ ichiVaults }) => ichiVaults);
+async function sendAllRewardInfoQueryRequest(
+  url: string,
+  query: string,
+  isAmplifiHosted?: boolean,
+): Promise<RewardInfo[]> {
+  return graphqlRequest<AllRewardInfoQueryResponse>(url, query, undefined, isAmplifiHosted).then(
+    ({ ichiVaults }) => ichiVaults,
+  );
 }
 
 export async function getRewardInfo(

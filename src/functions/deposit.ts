@@ -308,7 +308,7 @@ export async function depositNativeToken(
   const maxGasLimit = getGasLimit(chainId);
 
   if (chainId === SupportedChainId.hedera) {
-    depositAmount = depositAmount * BigInt(1e10);
+    depositAmount *= BigInt(1e10);
   }
 
   // the first call: get estimated LP amount

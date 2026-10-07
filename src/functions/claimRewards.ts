@@ -1,5 +1,5 @@
 import { JsonRpcProvider, ContractTransactionResponse, Overrides, Signer } from 'ethers';
-import { SupportedDex, SupportedChainId } from '../types';
+import { SupportedDex } from '../types';
 import { isMfdEnabled } from '../utils/isVelodrome';
 // eslint-disable-next-line import/no-cycle
 import { getChainId, validateVaultData } from './vault';

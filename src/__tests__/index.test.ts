@@ -47,7 +47,6 @@ import {
   addressConfig,
   depositWithHtsWrapping,
   withdrawWithErc20Wrapping,
-  withdrawNativeTokenWithErc20Wrapping,
   approveToken,
   isTokenApproved,
 } from '../index';
@@ -114,9 +113,23 @@ describe('Vault', () => {
   });
 
   it.skip('approveToken', async () => {
-    const approve = await approveToken(account, '0xd7d4d91d64a6061fa00a94e2b3a2d2a5fb677849', vault.address, wallet, vault.dex, amount1);
+    const approve = await approveToken(
+      account,
+      '0xd7d4d91d64a6061fa00a94e2b3a2d2a5fb677849',
+      vault.address,
+      wallet,
+      vault.dex,
+      amount1,
+    );
     await approve.wait();
-    const isApproved = await isTokenApproved(account, '0xd7d4d91d64a6061fa00a94e2b3a2d2a5fb677849', amount1, vault.address, provider, vault.dex);
+    const isApproved = await isTokenApproved(
+      account,
+      '0xd7d4d91d64a6061fa00a94e2b3a2d2a5fb677849',
+      amount1,
+      vault.address,
+      provider,
+      vault.dex,
+    );
     expect(isApproved).toEqual(true);
   });
 
@@ -318,7 +331,7 @@ describe('Withdraws', () => {
 
   it.skip('approveVaultToken', async () => {
     let approve: ethers.ContractTransactionResponse | null = null;
-    approve = await approveVaultToken(account, vault.address, wallet, vault.dex, Number(sharesToWithdraw)*2);
+    approve = await approveVaultToken(account, vault.address, wallet, vault.dex, Number(sharesToWithdraw) * 2);
     await approve.wait();
     const isApproved = await isVaultTokenApproved(account, sharesToWithdraw, vault.address, provider, vault.dex);
     expect(isApproved).toEqual(true);
@@ -439,7 +452,7 @@ describe('Rewards', () => {
   });
   it.skip('getAllUserRewards', async () => {
     const rewards = await getAllUserRewards(account, provider, vault.dex);
-    console.log({rewards})
+    console.log({ rewards });
 
     expect(rewards.length).toBeGreaterThan(0);
   });

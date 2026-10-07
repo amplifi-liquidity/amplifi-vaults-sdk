@@ -71,22 +71,10 @@ function getTotalAmountsAtTransactionEvent(
   const scarceTokenDecimals = isVaultInverted ? token0Decimals : token1Decimals;
   const price0 = !isVaultInverted
     ? 1
-    : getPrice(
-        isVaultInverted,
-        BigInt(objTransactionEvent.sqrtPrice),
-        depositTokenDecimals,
-        scarceTokenDecimals,
-        15,
-      );
+    : getPrice(isVaultInverted, BigInt(objTransactionEvent.sqrtPrice), depositTokenDecimals, scarceTokenDecimals, 15);
   const price1 = isVaultInverted
     ? 1
-    : getPrice(
-        isVaultInverted,
-        BigInt(objTransactionEvent.sqrtPrice),
-        depositTokenDecimals,
-        scarceTokenDecimals,
-        15,
-      );
+    : getPrice(isVaultInverted, BigInt(objTransactionEvent.sqrtPrice), depositTokenDecimals, scarceTokenDecimals, 15);
   const amount0 = beforeEvent
     ? Number(formatBigInt(BigInt(objTransactionEvent.totalAmount0BeforeEvent), token0Decimals)) * price0
     : Number(formatBigInt(BigInt(objTransactionEvent.totalAmount0), token0Decimals)) * price0;

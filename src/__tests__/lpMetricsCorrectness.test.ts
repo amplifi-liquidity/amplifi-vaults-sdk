@@ -1,5 +1,4 @@
 /* eslint-env jest */
-/* global BigInt */
 import { JsonRpcProvider } from 'ethers';
 import { SupportedChainId, SupportedDex } from '../types';
 import { getLpApr, getLpPriceChange } from '../functions/calculateApr';
