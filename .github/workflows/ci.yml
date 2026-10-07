@@ -20,8 +20,6 @@ jobs:
         with:
           node-version-file: .nvmrc
       - run: corepack enable
-      # A transitive dependency (ethereumjs-abi) is locked to a git+ssh URL; fetch it over HTTPS.
-      - run: git config --global url."https://github.com/".insteadOf ssh://git@github.com/
       - run: yarn install --immutable
       # Same gate as prepublishOnly, so a green PR is publishable.
       - run: yarn generate

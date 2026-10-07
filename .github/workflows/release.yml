@@ -43,8 +43,6 @@ jobs:
       - name: Update npm (trusted publishing needs npm >= 11.5.1)
         run: npm install -g npm@11.17.0
       - run: corepack enable
-      # A transitive dependency (ethereumjs-abi) is locked to a git+ssh URL; fetch it over HTTPS.
-      - run: git config --global url."https://github.com/".insteadOf ssh://git@github.com/
       - run: yarn install --immutable
 
       - run: yarn generate
