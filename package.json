@@ -1,6 +1,6 @@
 {
   "name": "@amplifi-liquidity/amplifi-vaults-sdk",
-  "version": "1.0.24",
+  "version": "1.0.25",
   "description": "The Amplifi Vaults SDK",
   "main": "dist/src/index.cjs.js",
   "module": "dist/src/index.esm.js",
@@ -24,7 +24,7 @@
     "postversion": "git push && git push --tags",
     "prebuild": "rm-cli -r ./dist",
     "prepare": "npm run build",
-    "prepublishOnly": "npm test && npm run lint && yarn build",
+    "prepublishOnly": "yarn generate && npm test && npm run lint && yarn build",
     "preversion": "npm run lint",
     "test": "jest --runInBand --forceExit",
     "test:live": "LIVE_TESTS=1 jest --runInBand --forceExit",
