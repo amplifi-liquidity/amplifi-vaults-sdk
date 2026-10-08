@@ -25,14 +25,20 @@ function subgraphRequestTimeoutMs(): number {
   return Number.isFinite(configured) && configured > 0 ? configured : DEFAULT_SUBGRAPH_REQUEST_TIMEOUT_MS;
 }
 
+// Env secrets shorter than this are treated as placeholders: splitting on them would garble messages.
+const MIN_REDACTABLE_SECRET_LENGTH = 8;
+
 // Gateway URLs carry the API key in the path (gateway.thegraph.com/api/<key>/subgraphs/...) and
 // node-fetch puts the full URL in network error messages, so scrub keys before errors reach logs.
+// URL userinfo (https://user:pass@host) is stripped as well.
 function redactSubgraphCredentials(text: string): string {
   let redacted = text
-    .replace(/(\/api\/)[^/?#\s"']+(?=\/(?:subgraphs|deployments)\/)/g, '$1[redacted]')
+    .replace(/(\b[a-z][a-z\d+.-]*:\/\/)[^/?#\s"'@]+@/gi, '$1[redacted]@')
+    .replace(/(\/api\/)[^/?#\s"']+(?=\/(?:subgraphs|deployments)\b)/g, '$1[redacted]')
     .replace(/([?&](?:api[-_]?key|key|token|access_token)=)[^&#\s"'\\]+/gi, '$1[redacted]');
-  [process.env.SUBGRAPH_API_KEY, process.env.AMPLIFI_SUBGRAPH_API_KEY].forEach((secret) => {
-    if (secret) redacted = redacted.split(secret).join('[redacted]');
+  [process.env.SUBGRAPH_API_KEY, process.env.AMPLIFI_SUBGRAPH_API_KEY].forEach((value) => {
+    const secret = value?.trim();
+    if (secret && secret.length >= MIN_REDACTABLE_SECRET_LENGTH) redacted = redacted.split(secret).join('[redacted]');
   });
   return redacted;
 }
@@ -53,31 +59,36 @@ export async function graphqlRequest<TResult, TVariables extends Record<string, 
       signal: AbortSignal.timeout(subgraphRequestTimeoutMs()),
     });
   } catch (error) {
-    // Scrub in place so the error keeps its type and fields (ClientError.response, FetchError.code).
-    // Only write when something changed: some errors (DOMException) expose message as a getter.
-    if (error instanceof Error) {
-      const message = redactSubgraphCredentials(error.message);
-      if (message !== error.message) error.message = message;
-      const stack = error.stack && redactSubgraphCredentials(error.stack);
-      if (stack !== error.stack) error.stack = stack;
-    }
-    if (error instanceof ClientError) {
-      // Headers are not JSON-serializable, but console.error still inspects their values.
-      const responseHeaders = error.response.headers as Headers | undefined;
-      if (responseHeaders) {
-        responseHeaders.forEach((value, name) => {
-          const redacted = redactSubgraphCredentials(value);
-          if (redacted !== value) responseHeaders.set(name, redacted);
-        });
+    try {
+      // Scrub in place so the error keeps its type and fields (ClientError.response, FetchError.code).
+      // Only write when something changed: some errors (DOMException) expose message as a getter.
+      if (error instanceof Error) {
+        const message = redactSubgraphCredentials(error.message);
+        if (message !== error.message) error.message = message;
+        const stack = error.stack && redactSubgraphCredentials(error.stack);
+        if (stack !== error.stack) error.stack = stack;
       }
-      const redactString = (_key: string, value: unknown) =>
-        typeof value === 'string' ? redactSubgraphCredentials(value) : value;
-      error.response = {
-        ...JSON.parse(JSON.stringify(error.response, redactString)),
-        headers: responseHeaders,
-      };
-      // Clone before sanitizing: the error's variables still belong to the caller.
-      error.request = JSON.parse(JSON.stringify(error.request, redactString));
+      if (error instanceof ClientError) {
+        // Headers are not JSON-serializable, but console.error still inspects their values.
+        const responseHeaders = error.response.headers as Headers | undefined;
+        if (responseHeaders) {
+          responseHeaders.forEach((value, name) => {
+            const redacted = redactSubgraphCredentials(value);
+            if (redacted !== value) responseHeaders.set(name, redacted);
+          });
+        }
+        const redactString = (_key: string, value: unknown) =>
+          typeof value === 'string' ? redactSubgraphCredentials(value) : value;
+        error.response = {
+          ...JSON.parse(JSON.stringify(error.response, redactString)),
+          headers: responseHeaders,
+        };
+        // Clone before sanitizing: the error's variables still belong to the caller.
+        error.request = JSON.parse(JSON.stringify(error.request, redactString));
+      }
+    } catch {
+      // Never fall back to the unredacted original, or to a redaction error that may quote it.
+      throw new Error('Subgraph request failed (details redacted)');
     }
     throw error;
   }

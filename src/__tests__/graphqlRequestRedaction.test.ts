@@ -52,6 +52,33 @@ test('configured subgraph keys are scrubbed wherever they appear', async () => {
   expectRedacted(error, KEY);
 });
 
+test('a gateway key is redacted even when the URL ends at /subgraphs', async () => {
+  const error = await caught(graphqlRequest(unreachable(`/api/${KEY}/subgraphs`), '{ ok }'));
+  expect(error.message).toContain('/api/[redacted]/subgraphs');
+  expectRedacted(error, KEY);
+});
+
+test('URL userinfo credentials are redacted', async () => {
+  const error = await caught(graphqlRequest(`http://indexer:${KEY}@127.0.0.1:1/graphql`, '{ ok }'));
+  expect(error.message).toContain('http://[redacted]@127.0.0.1:1/graphql');
+  expect(error.message).not.toContain('indexer');
+  expectRedacted(error, KEY);
+});
+
+test('configured keys are trimmed before scrubbing', async () => {
+  process.env.SUBGRAPH_API_KEY = `  ${KEY}\n`;
+  const error = await caught(graphqlRequest(unreachable(`/custom/${KEY}/graphql`), '{ ok }'));
+  expectRedacted(error, KEY);
+});
+
+test('short or placeholder configured keys do not garble error messages', async () => {
+  process.env.SUBGRAPH_API_KEY = '1';
+  process.env.AMPLIFI_SUBGRAPH_API_KEY = ' graph ';
+  const error = await caught(graphqlRequest(unreachable('/graphql'), '{ ok }'));
+  expect(error.message).toContain('http://127.0.0.1:1/graphql');
+  expect(error.message).not.toContain('[redacted]');
+});
+
 describe('upstream error responses', () => {
   let server: http.Server;
   let baseUrl: string;

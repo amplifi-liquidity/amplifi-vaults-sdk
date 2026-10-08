@@ -44,6 +44,6 @@ test('user amounts RPC failure logs safe context and rethrows the original excep
   expect(multicall).toHaveBeenCalledTimes(1);
   expect(inspect(logger.mock.calls, { depth: null })).not.toContain(key);
   expect(logger).toHaveBeenCalledWith(
-    `Could not get user amounts for ${account} on chain 57073 and dex ${SupportedDex.Reservoir}`,
+    `Could not get user amounts for ${account} on chain 57073 and dex ${SupportedDex.Reservoir} (code=SERVER_ERROR)`,
   );
 });
