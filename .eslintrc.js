@@ -3,7 +3,7 @@ module.exports = {
   // BigInt and other ES2020 globals are used throughout; the build targets Node 18+.
   env: { es2020: true, node: true },
   // Node >= 18 web globals that this ESLint version's env presets predate.
-  globals: { AbortSignal: 'readonly' },
+  globals: { AbortSignal: 'readonly', Headers: 'readonly' },
   extends: ['airbnb-base', 'prettier', 'plugin:import/typescript'],
   plugins: ['@typescript-eslint', 'prettier'],
   rules: {

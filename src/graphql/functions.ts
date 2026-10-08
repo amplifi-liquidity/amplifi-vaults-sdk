@@ -1,7 +1,7 @@
 /* eslint-disable camelcase */
 /* eslint-disable import/no-cycle */
 // eslint-disable-next-line import/no-unresolved
-import { request } from 'graphql-request';
+import { ClientError, request } from 'graphql-request';
 import {
   CollectFeesQueryData,
   FeeAprQueryResponse,
@@ -25,6 +25,18 @@ function subgraphRequestTimeoutMs(): number {
   return Number.isFinite(configured) && configured > 0 ? configured : DEFAULT_SUBGRAPH_REQUEST_TIMEOUT_MS;
 }
 
+// Gateway URLs carry the API key in the path (gateway.thegraph.com/api/<key>/subgraphs/...) and
+// node-fetch puts the full URL in network error messages, so scrub keys before errors reach logs.
+function redactSubgraphCredentials(text: string): string {
+  let redacted = text
+    .replace(/(\/api\/)[^/?#\s"']+(?=\/(?:subgraphs|deployments)\/)/g, '$1[redacted]')
+    .replace(/([?&](?:api[-_]?key|key|token|access_token)=)[^&#\s"'\\]+/gi, '$1[redacted]');
+  [process.env.SUBGRAPH_API_KEY, process.env.AMPLIFI_SUBGRAPH_API_KEY].forEach((secret) => {
+    if (secret) redacted = redacted.split(secret).join('[redacted]');
+  });
+  return redacted;
+}
+
 export async function graphqlRequest<TResult, TVariables extends Record<string, unknown> = Record<string, unknown>>(
   url: string,
   query: string,
@@ -32,13 +44,43 @@ export async function graphqlRequest<TResult, TVariables extends Record<string, 
   isAmplifiHosted?: boolean,
 ): Promise<TResult> {
   const headers = isAmplifiHosted ? getAmplifiHeaders() : undefined;
-  return request<TResult>({
-    url,
-    document: query,
-    variables,
-    requestHeaders: headers,
-    signal: AbortSignal.timeout(subgraphRequestTimeoutMs()),
-  });
+  try {
+    return await request<TResult>({
+      url,
+      document: query,
+      variables,
+      requestHeaders: headers,
+      signal: AbortSignal.timeout(subgraphRequestTimeoutMs()),
+    });
+  } catch (error) {
+    // Scrub in place so the error keeps its type and fields (ClientError.response, FetchError.code).
+    // Only write when something changed: some errors (DOMException) expose message as a getter.
+    if (error instanceof Error) {
+      const message = redactSubgraphCredentials(error.message);
+      if (message !== error.message) error.message = message;
+      const stack = error.stack && redactSubgraphCredentials(error.stack);
+      if (stack !== error.stack) error.stack = stack;
+    }
+    if (error instanceof ClientError) {
+      // Headers are not JSON-serializable, but console.error still inspects their values.
+      const responseHeaders = error.response.headers as Headers | undefined;
+      if (responseHeaders) {
+        responseHeaders.forEach((value, name) => {
+          const redacted = redactSubgraphCredentials(value);
+          if (redacted !== value) responseHeaders.set(name, redacted);
+        });
+      }
+      const redactString = (_key: string, value: unknown) =>
+        typeof value === 'string' ? redactSubgraphCredentials(value) : value;
+      error.response = {
+        ...JSON.parse(JSON.stringify(error.response, redactString)),
+        headers: responseHeaders,
+      };
+      // Clone before sanitizing: the error's variables still belong to the caller.
+      error.request = JSON.parse(JSON.stringify(error.request, redactString));
+    }
+    throw error;
+  }
 }
 
 export async function sendAllEventsQueryRequest(

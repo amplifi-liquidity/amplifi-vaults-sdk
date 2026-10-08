@@ -25,9 +25,10 @@ export async function getTokenDecimals(
     const tokenDecimals = Number(await tokenContract.decimals());
     cache.set(key, tokenDecimals, ttl);
     return tokenDecimals;
-  } catch (error) {
-    console.error(error);
-    throw new Error(`Could not get token decimals for ${tokenAddress} on ${chainId}`);
+  } catch {
+    const message = `Could not get token decimals for ${tokenAddress} on ${chainId}`;
+    console.error(message);
+    throw new Error(message);
   }
 }
 
@@ -78,8 +79,9 @@ export async function _getTotalSupply(vaultAddress: string, jsonProvider: JsonRp
     const totalSupply = await vaultContract.totalSupply();
 
     return raw ? totalSupply : formatBigInt(totalSupply, ichiVaultDecimals);
-  } catch (error) {
-    console.error(error);
-    throw new Error(`Could not get total supply for ${vaultAddress}`);
+  } catch {
+    const message = `Could not get total supply for ${vaultAddress}`;
+    console.error(message);
+    throw new Error(message);
   }
 }

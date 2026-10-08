@@ -441,7 +441,7 @@ export async function getAllUserAmounts(
 
     return processedResults;
   } catch (error) {
-    console.error('Could not get user amounts', error);
+    console.error(`Could not get user amounts for ${accountAddress} on chain ${chainId} and dex ${dex}`);
     throw error;
   }
 }
