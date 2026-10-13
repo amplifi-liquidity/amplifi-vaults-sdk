@@ -1,17 +1,13 @@
 import { JsonRpcProvider } from 'ethers';
 import { SupportedDex, SupportedChainId, IchiVault, VaultWithRewards } from '../types';
 // eslint-disable-next-line import/no-cycle
-import {
-  AllRewardVaultsQueryResponse,
-  VaultQueryData,
-  VaultsByPoolQueryData,
-  VaultsByTokensQueryData,
-} from '../types/vaultQueryData';
+import { VaultQueryData, VaultsByPoolQueryData, VaultsByTokensQueryData } from '../types/vaultQueryData';
 import { getIchiVaultContract } from '../contracts';
 import { allRewardVaults, getVaultQuery, vaultByPoolQuery, vaultByTokensQuery } from '../graphql/queries';
 import { getGraphUrls } from '../utils/getGraphUrls';
 import cache, { TTL_1H, TTL_6H } from '../utils/cache';
 import { graphqlRequest } from '../graphql/functions';
+import readAllRewardVaultPages from '../graphql/rewardVaults';
 
 const chainIdCache = new WeakMap<JsonRpcProvider, SupportedChainId>();
 
@@ -130,9 +126,7 @@ async function sendAllRewardVaultsQueryRequest(
   query: string,
   isAmplifiHosted?: boolean,
 ): Promise<VaultWithRewards[]> {
-  return graphqlRequest<AllRewardVaultsQueryResponse>(url, query, undefined, isAmplifiHosted).then(
-    ({ ichiVaults }) => ichiVaults,
-  );
+  return readAllRewardVaultPages<VaultWithRewards>(url, query, isAmplifiHosted);
 }
 
 export async function getIchiVaultInfo(

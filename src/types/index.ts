@@ -268,12 +268,16 @@ export type PriceChange = {
 
 export type UserBalanceInVault = {
   vaultAddress: string;
+  /** Total owned shares, including staked shares for MFD-enabled vaults. */
   shares: string;
+  /** Staked subset already included in shares; do not add it again. */
   stakedShares?: string;
 };
 export type UserBalanceInVaultBN = {
   vaultAddress: string;
+  /** Total owned shares in raw vault units, including MFD-staked shares. */
   shares: bigint;
+  /** Staked subset already included in shares; do not add it again. */
   stakedShares?: bigint;
 };
 

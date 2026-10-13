@@ -25,7 +25,7 @@ export interface VaultWithdrawsQueryData {
   vaultWithdraws: VaultTransactionEvent[];
 }
 export interface UserBalancesQueryData {
-  user: UserBalances;
+  user: UserBalances | null;
 }
 
 export interface FeeAprQueryResponse {

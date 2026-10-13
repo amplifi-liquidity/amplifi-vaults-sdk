@@ -664,6 +664,10 @@ const amountsBN: [BigNumber, BigNumber] & {amount0: BigNumber, amount1: BigNumbe
 
 This function returns user balances (as [UserBalanceInVault](#userbalanceinvault) or [UserBalanceInVaultBN](#userbalanceinvaultbn)) for all vaults on the specified decentralized exchange (DEX). The result is cached for 2 minutes by default. You can set your own cache TTL by adding the CACHE_TTL environment variable in millisecond. For example, CACHE_TTL = 60000 is 1 minute.
 
+For MFD-enabled vaults, `shares` is the total owned balance: wallet shares plus staked shares. `stakedShares` identifies the staked subset of that total; consumers must not add it to `shares` again. Fixed-point share sums retain the vault's 18-decimal precision. Without MFD support, `shares` contains wallet shares only.
+
+Bulk balance and amount reads validate the subgraph response before caching. A verified absent user (`user: null`) or an empty vault-share list returns `[]`; malformed identities or share balances reject instead of becoming an empty portfolio.
+
 ```typescript
 import { getAllUserBalances, SupportedDex, UserBalanceInVault, UserBalanceInVaultBN } from '@amplifi-liquidity/amplifi-vaults-sdk';
 
@@ -698,6 +702,8 @@ const userBalancesInVaultsBN: UserBalanceInVaultBN[] = await getAllUserBalances(
 | raw   | true | undefined | false |
 
 This function returns user token amounts (as [UserAmountsInVault](#useramountsinvault) or [UserAmountsInVaultBN](#useramountsinvaultbn)) in all vaults on the specified decentralized exchange (DEX). The result is cached for 2 minutes by default. You can set your own cache TTL by adding the CACHE_TTL environment variable in millisecond. For example, CACHE_TTL = 60000 is 1 minute.
+
+Amounts represent the user's proportional ownership of the vault's token balances. For MFD-enabled vaults, both wallet and staked shares count once, including positions held entirely in the farm. Raw amounts use each token's own units; formatted amounts use each token's decimals. Native rewards are separate from these underlying token amounts.
 
 ```typescript
 import { getAllUserAmounts, SupportedDex, UserAmountsInVault, UserAmountsInVaultBN } from '@amplifi-liquidity/amplifi-vaults-sdk';
@@ -1168,6 +1174,8 @@ const rewardInfo: RewardInfo = getRewardInfo(chainId, dex, vaultAddress);
 
 This function returns an array of [RewardInfo](#rewardinfo) about reward rates and farming contracts for all vaults on the dex. This function is specific for Velodrome vaults.
 
+Reward catalogs (`getAllRewardInfo` and `getAllRewardVaults`) read registered farming contracts in ascending ID order, using pages of 1,000 and an ID cursor. Only a complete catalog is cached. Each source read has a shared 30-second deadline and a maximum of 64 pages; page failures, malformed data or exhausted bounds reject rather than report a partial or empty catalog. A fallback starts from its own first page.
+
 ```typescript
 import { getAllRewardInfo, SupportedChainId, SupportedDex } from '@amplifi-liquidity/amplifi-vaults-sdk';
 
@@ -1187,6 +1195,8 @@ const allRewardInfo: RewardInfo[] = getAllRewardInfo(chainId, dex);
 | raw   | true | undefined | - | false |
 
 This function returns user rewards (as [UserRewards](#userrewards)) for all vaults on the dex. This function is specific for Velodrome vaults.
+
+Each result is a vault object with `rewardTokens`, including `{ vaultAddress, rewardTokens: [] }` when the distributor reports valid empty token and amount arrays. Mismatched arrays, invalid amounts or missing token decimals reject; formatted amounts never assume 18 decimals for an unknown reward token.
 
 ```typescript
 import { getAllUserRewards, SupportedDex } from '@amplifi-liquidity/amplifi-vaults-sdk';

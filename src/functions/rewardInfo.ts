@@ -7,9 +7,10 @@ import { RewardInfo, SupportedChainId, SupportedDex } from '../types';
 import cache, { TTL_6H } from '../utils/cache';
 import { getGraphUrls } from '../utils/getGraphUrls';
 import { allRewardInfoQuery, rewardInfoQuery } from '../graphql/queries';
-import { AllRewardInfoQueryResponse, RewardInfoQueryResponse } from '../types/vaultQueryData';
+import { RewardInfoQueryResponse } from '../types/vaultQueryData';
 import { isMfdEnabled } from '../utils/isVelodrome';
 import { graphqlRequest } from '../graphql/functions';
+import readAllRewardVaultPages from '../graphql/rewardVaults';
 
 async function sendRewardInfoQueryRequest(
   url: string,
@@ -32,9 +33,7 @@ async function sendAllRewardInfoQueryRequest(
   query: string,
   isAmplifiHosted?: boolean,
 ): Promise<RewardInfo[]> {
-  return graphqlRequest<AllRewardInfoQueryResponse>(url, query, undefined, isAmplifiHosted).then(
-    ({ ichiVaults }) => ichiVaults,
-  );
+  return readAllRewardVaultPages<RewardInfo>(url, query, isAmplifiHosted);
 }
 
 export async function getRewardInfo(

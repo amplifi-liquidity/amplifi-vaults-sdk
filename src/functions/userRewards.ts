@@ -1,7 +1,7 @@
 /* eslint-disable no-redeclare */
 /* eslint-disable import/no-cycle */
 
-import { JsonRpcProvider } from 'ethers';
+import { isAddress, JsonRpcProvider } from 'ethers';
 import { getAllRewardVaults, getChainId, validateVaultData } from './vault';
 import {
   SupportedDex,
@@ -15,6 +15,38 @@ import { isMfdEnabled } from '../utils/isVelodrome';
 import { getMultiFeeDistributorContract } from '../contracts';
 import formatBigInt from '../utils/formatBigInt';
 import { decodeFarmingRewardsResult, encodeFarmingRewardsCall, multicall } from '../utils/multicallUtils';
+
+function verifiedClaimableRewards(
+  tokens: string[],
+  amounts: bigint[],
+  metadata: { token: string; tokenDecimals: number }[] | undefined,
+): UserRewardsByTokenBN[] {
+  if (!Array.isArray(tokens) || !Array.isArray(amounts) || tokens.length !== amounts.length) {
+    throw new Error('Malformed claimable reward arrays');
+  }
+  return tokens.map((token, index) => {
+    const decimals = metadata?.find((entry) => entry?.token?.toLowerCase() === token.toLowerCase())?.tokenDecimals;
+    if (
+      !isAddress(token) ||
+      typeof amounts[index] !== 'bigint' ||
+      amounts[index] < 0n ||
+      decimals == null ||
+      !Number.isInteger(Number(decimals)) ||
+      Number(decimals) < 0 ||
+      Number(decimals) > 255
+    ) {
+      throw new Error('Claimable reward has invalid amounts or missing token decimals');
+    }
+    return { token, tokenDecimals: Number(decimals), rewardAmount: amounts[index] };
+  });
+}
+
+function formattedRewards(rewards: UserRewardsByTokenBN[]): UserRewardsByToken[] {
+  return rewards.map((reward) => ({
+    ...reward,
+    rewardAmount: formatBigInt(reward.rewardAmount, reward.tokenDecimals),
+  }));
+}
 
 export async function getUserRewards(
   accountAddress: string,
@@ -46,34 +78,14 @@ export async function getUserRewards(
   // eslint-disable-next-line no-return-await
   const { vault } = await validateVaultData(vaultAddress, jsonProvider, dex);
   const { rewardTokens } = vault;
-  if (!vault.farmingContract || !rewardTokens || rewardTokens.length <= 0) {
+  if (!vault.farmingContract) {
     return [];
   }
 
   const mfdContract = getMultiFeeDistributorContract(vault.farmingContract, jsonProvider);
   const result = await mfdContract.claimableRewards(accountAddress); // [[rewardTokens], [amounts]]
-  if (result[0].length <= 0 || result[1].length <= 0) {
-    return [];
-  }
-  const tokens = result[0];
-  const amounts = result[1];
-
-  const rewards = tokens.map((token, ind) => {
-    const decimals = rewardTokens?.find((rt) => rt.token.toLowerCase() === token.toLowerCase())?.tokenDecimals;
-    return raw
-      ? {
-          token,
-          tokenDecimals: decimals,
-          rewardAmount: amounts[ind],
-        }
-      : {
-          token,
-          tokenDecimals: decimals,
-          rewardAmount: formatBigInt(amounts[ind], decimals),
-        };
-  });
-
-  return rewards;
+  const rewards = verifiedClaimableRewards(result[0], result[1], rewardTokens);
+  return raw ? rewards : formattedRewards(rewards);
 }
 
 export async function getAllUserRewards(
@@ -115,40 +127,13 @@ export async function getAllUserRewards(
   // Execute multicall
   const results = await multicall(farmingContractCalls, chainId, jsonProvider);
 
-  // Process results
-  const processedResults = vaults.map((vault: VaultWithRewards, index: number) => {
-    const rewards = decodeFarmingRewardsResult(results[index], vault.farmingContract.id);
-    if (rewards[0].length <= 0 || rewards[1].length <= 0) {
-      return [];
-    }
-    const { rewardTokens } = vault.farmingContract;
-    if (!rewardTokens || rewardTokens.length <= 0) {
-      return [];
-    }
-    const tokens = rewards[0];
-    const amounts = rewards[1];
-    if (raw) {
-      return {
-        vaultAddress: vault.id,
-        rewardTokens: tokens.map((token, ind) => {
-          const decimals = vault.farmingContract.rewardTokens.find(
-            (rt) => rt.token.toLowerCase() === token.toLowerCase(),
-          )?.tokenDecimals;
-          return { token, tokenDecimals: decimals, rewardAmount: amounts[ind] };
-        }),
-      };
-    } else {
-      return {
-        vaultAddress: vault.id,
-        rewardTokens: tokens.map((token, ind) => {
-          const decimals = vault.farmingContract.rewardTokens.find(
-            (rt) => rt.token.toLowerCase() === token.toLowerCase(),
-          )?.tokenDecimals;
-          return { token, tokenDecimals: decimals, rewardAmount: formatBigInt(amounts[ind], decimals) };
-        }),
-      };
-    }
+  // Verified empty arrays remain typed per-vault results, never bare array entries.
+  const processedResults = vaults.map((vault: VaultWithRewards, index: number): UserRewards | UserRewardsBN => {
+    const [tokens, amounts] = decodeFarmingRewardsResult(results[index], vault.farmingContract.id);
+    const rewardTokens = verifiedClaimableRewards(tokens, amounts, vault.farmingContract.rewardTokens);
+    return raw
+      ? { vaultAddress: vault.id, rewardTokens }
+      : { vaultAddress: vault.id, rewardTokens: formattedRewards(rewardTokens) };
   });
-
   return processedResults;
 }
