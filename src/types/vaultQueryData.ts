@@ -1,5 +1,5 @@
 // eslint-disable-next-line import/no-cycle
-import { IchiVault, Fees, VaultTransactionEvent, UserBalances, FeeAprData, RewardInfo, VaultWithRewards } from '..';
+import { IchiVault, Fees, VaultTransactionEvent, UserBalances, FeeAprData, RewardInfo } from '..';
 
 export interface VaultQueryData {
   ichiVault: IchiVault;
@@ -33,10 +33,4 @@ export interface FeeAprQueryResponse {
 }
 export interface RewardInfoQueryResponse {
   ichiVault: RewardInfo;
-}
-export interface AllRewardInfoQueryResponse {
-  ichiVaults: RewardInfo[];
-}
-export interface AllRewardVaultsQueryResponse {
-  ichiVaults: VaultWithRewards[];
 }

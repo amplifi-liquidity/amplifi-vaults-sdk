@@ -1,7 +1,7 @@
 /* eslint-disable no-redeclare */
 /* eslint-disable import/no-cycle */
 
-import { isAddress, JsonRpcProvider } from 'ethers';
+import { JsonRpcProvider } from 'ethers';
 import { getAllRewardVaults, getChainId, validateVaultData } from './vault';
 import {
   SupportedDex,
@@ -21,23 +21,17 @@ function verifiedClaimableRewards(
   amounts: bigint[],
   metadata: { token: string; tokenDecimals: number }[] | undefined,
 ): UserRewardsByTokenBN[] {
-  if (!Array.isArray(tokens) || !Array.isArray(amounts) || tokens.length !== amounts.length) {
+  if (tokens.length !== amounts.length) {
     throw new Error('Malformed claimable reward arrays');
   }
-  return tokens.map((token, index) => {
-    const decimals = metadata?.find((entry) => entry?.token?.toLowerCase() === token.toLowerCase())?.tokenDecimals;
-    if (
-      !isAddress(token) ||
-      typeof amounts[index] !== 'bigint' ||
-      amounts[index] < 0n ||
-      decimals == null ||
-      !Number.isInteger(Number(decimals)) ||
-      Number(decimals) < 0 ||
-      Number(decimals) > 255
-    ) {
-      throw new Error('Claimable reward has invalid amounts or missing token decimals');
+  // Decoded ethers Results would make flatMap return a Result; copy to a plain array first.
+  return Array.from(tokens).flatMap((token, index) => {
+    const decimals = metadata?.find((entry) => entry.token.toLowerCase() === token.toLowerCase())?.tokenDecimals;
+    if (decimals == null && amounts[index] === 0n) return [];
+    if (decimals == null || !Number.isInteger(Number(decimals)) || Number(decimals) < 0 || Number(decimals) > 255) {
+      throw new Error('Claimable reward is missing token decimals');
     }
-    return { token, tokenDecimals: Number(decimals), rewardAmount: amounts[index] };
+    return [{ token, tokenDecimals: Number(decimals), rewardAmount: amounts[index] }];
   });
 }
 
@@ -127,7 +121,6 @@ export async function getAllUserRewards(
   // Execute multicall
   const results = await multicall(farmingContractCalls, chainId, jsonProvider);
 
-  // Verified empty arrays remain typed per-vault results, never bare array entries.
   const processedResults = vaults.map((vault: VaultWithRewards, index: number): UserRewards | UserRewardsBN => {
     const [tokens, amounts] = decodeFarmingRewardsResult(results[index], vault.farmingContract.id);
     const rewardTokens = verifiedClaimableRewards(tokens, amounts, vault.farmingContract.rewardTokens);

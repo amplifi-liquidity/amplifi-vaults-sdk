@@ -48,10 +48,12 @@ beforeEach(() => {
   jest.useFakeTimers();
   jest.clearAllMocks();
   request.mockReset();
+  jest.spyOn(console, 'error').mockImplementation(() => undefined);
 });
 afterEach(() => {
   jest.runOnlyPendingTimers();
   jest.useRealTimers();
+  jest.restoreAllMocks();
   cache.flushAll();
 });
 
@@ -82,12 +84,10 @@ test('a later page failure restarts the fallback source without retaining a part
     if (variables?.afterId) throw new Error('second page unavailable');
     return { ichiVaults: full };
   });
-  jest.spyOn(console, 'error').mockImplementation(() => undefined);
   const result = await getAllRewardVaults(SupportedChainId.ink, SupportedDex.Velodrome);
   expect(result.length).toBe(1);
   expect(result[0].id).toBe(vaultId(2000));
   expect(request.mock.calls.filter(([url]) => url.includes('fallback'))[0][2]).toEqual({ afterId: '' });
-  jest.restoreAllMocks();
 });
 
 test.each([
@@ -98,11 +98,9 @@ test.each([
   { ichiVaults: [vault(2), vault(1)] },
 ])('malformed reward catalog %p fails and is not cached as empty', async ({ ichiVaults }) => {
   request.mockResolvedValue({ ichiVaults });
-  jest.spyOn(console, 'error').mockImplementation(() => undefined);
   await expect(getAllRewardVaults(SupportedChainId.ink, SupportedDex.Velodrome)).rejects.toThrow();
   request.mockResolvedValue({ ichiVaults: [vault(1)] });
   expect(await getAllRewardVaults(SupportedChainId.ink, SupportedDex.Velodrome)).toEqual([vault(1)]);
-  jest.restoreAllMocks();
 });
 
 test('verified empty contract rewards preserve the public vault object instead of a bare array', async () => {
@@ -138,14 +136,31 @@ test('a claimed token absent from metadata cannot acquire fabricated default dec
   await expect(getAllUserRewards(account, provider, SupportedDex.Velodrome)).rejects.toThrow();
 });
 
+test('a zero-amount reward token absent from metadata is omitted without failing other vaults', async () => {
+  const unknownToken = '0x4444444444444444444444444444444444444444';
+  request.mockResolvedValue({ ichiVaults: [vault(1), vault(2)] });
+  (multicall as jest.Mock).mockResolvedValue([
+    {
+      success: true,
+      returnData: iface.encodeFunctionResult('claimableRewards', [
+        [token, unknownToken],
+        [1230000n, 0n],
+      ]),
+    },
+    { success: true, returnData: iface.encodeFunctionResult('claimableRewards', [[token], [0n]]) },
+  ]);
+  expect(await getAllUserRewards(account, provider, SupportedDex.Velodrome, true)).toEqual([
+    { vaultAddress: vaultId(1), rewardTokens: [{ token, tokenDecimals: 6, rewardAmount: 1230000n }] },
+    { vaultAddress: vaultId(2), rewardTokens: [{ token, tokenDecimals: 6, rewardAmount: 0n }] },
+  ]);
+});
+
 test.each([getAllUserBalances, getAllUserAmounts])(
   'malformed user data is unavailable in both bulk readers',
   async (read) => {
     request.mockResolvedValue({ user: 'malformed' });
-    jest.spyOn(console, 'error').mockImplementation(() => undefined);
     await expect(read(account, provider, SupportedDex.Velodrome)).rejects.toThrow();
     expect(multicall).not.toHaveBeenCalled();
-    jest.restoreAllMocks();
   },
 );
 
@@ -157,35 +172,34 @@ test.each([getAllUserBalances, getAllUserAmounts])(
   },
 );
 
+test.each(readers)('$name: a final short page past the shared deadline rejects and is not cached', async ({ read }) => {
+  request.mockImplementation(async () => {
+    jest.setSystemTime(Date.now() + 31000);
+    return { ichiVaults: [vault(1)] };
+  });
+  await expect(read(SupportedChainId.ink, SupportedDex.Velodrome)).rejects.toThrow();
+  request.mockResolvedValue({ ichiVaults: [vault(2)] });
+  expect((await read(SupportedChainId.ink, SupportedDex.Velodrome))[0].id).toBe(vaultId(2));
+});
+
 test('reward pagination fails closed when the shared read deadline expires', async () => {
   const full = Array.from({ length: 1000 }, (_, i) => vault(i + 1));
   request.mockImplementation(async () => {
     jest.setSystemTime(Date.now() + 31000);
     return { ichiVaults: full };
   });
-  jest.spyOn(console, 'error').mockImplementation(() => undefined);
   await expect(getAllRewardVaults(SupportedChainId.ink, SupportedDex.Velodrome)).rejects.toThrow();
-  jest.restoreAllMocks();
 });
 
-test('a missing wallet balance cannot be validated as an optional missing stake', async () => {
-  const missing = { vault: { id: vaultId(1) } };
-  request.mockResolvedValue({ user: { vaultShares: [missing] } });
-  jest.spyOn(console, 'error').mockImplementation(() => undefined);
-  await expect(getAllUserBalances(account, provider, SupportedDex.Velodrome)).rejects.toThrow();
-  request.mockResolvedValue({ user: null });
-  expect(await getAllUserBalances(account, provider, SupportedDex.Velodrome)).toEqual([]);
-  jest.restoreAllMocks();
-});
-
-test('malformed decimal segments fail before the user response is cached', async () => {
-  request.mockResolvedValue({ user: { vaultShares: [{ vault: { id: vaultId(1) }, vaultShareBalance: '1.2.3' }] } });
-  jest.spyOn(console, 'error').mockImplementation(() => undefined);
-  await expect(getAllUserBalances(account, provider, SupportedDex.Velodrome)).rejects.toThrow();
-  request.mockResolvedValue({ user: null });
-  expect(await getAllUserBalances(account, provider, SupportedDex.Velodrome)).toEqual([]);
-  jest.restoreAllMocks();
-});
+test.each([{ vault: { id: vaultId(1) } }, { vault: { id: vaultId(1) }, vaultShareBalance: '1.2.3' }])(
+  'malformed share row %p fails before the user response is cached',
+  async (row) => {
+    request.mockResolvedValue({ user: { vaultShares: [row] } });
+    await expect(getAllUserBalances(account, provider, SupportedDex.Velodrome)).rejects.toThrow();
+    request.mockResolvedValue({ user: null });
+    expect(await getAllUserBalances(account, provider, SupportedDex.Velodrome)).toEqual([]);
+  },
+);
 
 test('independently valid scientific share syntax remains supported', async () => {
   request.mockResolvedValue({ user: { vaultShares: [{ vault: { id: vaultId(1) }, vaultShareBalance: '1e-18' }] } });

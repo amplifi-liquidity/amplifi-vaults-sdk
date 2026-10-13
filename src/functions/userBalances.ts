@@ -122,6 +122,17 @@ export async function getUserBalance(
     : _getUserBalance(accountAddress, vaultAddress, jsonProvider, vault.farmingContract || null);
 }
 
+function assertShareBalance(value: unknown) {
+  if (typeof value !== 'string' || !VAULT_SHARE_NUMBER.test(value)) {
+    throw new Error('Malformed user vault share balance');
+  }
+  try {
+    parseBigInt(value, ichiVaultDecimals);
+  } catch {
+    throw new Error('Malformed user vault share balance');
+  }
+}
+
 export async function sendUserBalancesQueryRequest(
   url: string,
   accountAddress: string,
@@ -135,28 +146,15 @@ export async function sendUserBalancesQueryRequest(
   };
   const { user } = await graphqlRequest<UserBalancesQueryData>(url, query, variables, isAmplifiHosted);
   if (user === null) return null;
-  if (!user || typeof user !== 'object' || !Array.isArray(user.vaultShares)) {
+  if (typeof user !== 'object' || !Array.isArray(user.vaultShares)) {
     throw new Error('Malformed user balance response');
   }
   user.vaultShares.forEach((balance) => {
     if (!balance?.vault || typeof balance.vault.id !== 'string' || !balance.vault.id) {
       throw new Error('Malformed user vault identity');
     }
-    (['vaultShareBalance', 'stakedVaultShareBalance'] as const).forEach((key) => {
-      const value = balance[key];
-      if (key === 'stakedVaultShareBalance' && value === undefined) return;
-      try {
-        if (
-          typeof value !== 'string' ||
-          !VAULT_SHARE_NUMBER.test(value) ||
-          parseBigInt(value, ichiVaultDecimals) < 0n
-        ) {
-          throw new Error();
-        }
-      } catch {
-        throw new Error('Malformed user vault share balance');
-      }
-    });
+    assertShareBalance(balance.vaultShareBalance);
+    if (balance.stakedVaultShareBalance !== undefined) assertShareBalance(balance.stakedVaultShareBalance);
   });
   return user;
 }

@@ -28,7 +28,6 @@ export default async function readAllRewardVaultPages<T extends VaultWithRewards
       isAmplifiHosted,
       remainingMs,
     );
-    if (Date.now() >= deadline) throw new Error('Reward catalog read deadline exceeded');
     if (!Array.isArray(response?.ichiVaults) || response.ichiVaults.length > PAGE_SIZE) {
       throw new Error('Malformed reward catalog page');
     }
@@ -48,16 +47,13 @@ export default async function readAllRewardVaultPages<T extends VaultWithRewards
         throw new Error('Malformed or unordered reward catalog entry');
       }
       const rewardTokens = farm.rewardTokens.map((token) => {
-        const decimals = token?.tokenDecimals;
+        const decimals = String(token?.tokenDecimals);
         if (
           !token ||
           typeof token.token !== 'string' ||
           !token.token ||
-          (typeof decimals !== 'number' && typeof decimals !== 'string') ||
-          !Number.isInteger(Number(decimals)) ||
-          Number(decimals) < 0 ||
-          Number(decimals) > 255 ||
-          (typeof decimals === 'string' && !/^(0|[1-9][0-9]*)$/.test(decimals))
+          !/^(0|[1-9]\d{0,2})$/.test(decimals) ||
+          Number(decimals) > 255
         ) {
           throw new Error('Malformed reward token metadata');
         }
@@ -66,6 +62,7 @@ export default async function readAllRewardVaultPages<T extends VaultWithRewards
       result.push({ ...row, farmingContract: { ...farm, rewardTokens } });
       afterId = row.id;
     }
+    if (Date.now() >= deadline) throw new Error('Reward catalog read deadline exceeded');
     if (response.ichiVaults.length < PAGE_SIZE) return result;
   }
   throw new Error('Reward catalog page limit exceeded before completion');
