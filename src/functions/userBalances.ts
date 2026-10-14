@@ -129,6 +129,7 @@ function shareParts(share: VaultShares, isVelodrome: boolean) {
   return { wallet, staked, total: wallet + staked };
 }
 
+// parseBigInt alone accepts '', '-1' and '1.2.3', so the shape is checked first.
 function assertShareBalance(value: unknown) {
   if (typeof value !== 'string' || !VAULT_SHARE_NUMBER.test(value)) {
     throw new Error('Malformed user vault share balance');
@@ -144,13 +145,9 @@ export async function sendUserBalancesQueryRequest(
   url: string,
   accountAddress: string,
   query: string,
-  vaultAddress?: string,
   isAmplifiHosted?: boolean,
 ): Promise<UserBalancesQueryData['user']> {
-  const variables = {
-    accountAddress: accountAddress.toLowerCase(),
-    ...(vaultAddress ? { vaultAddress: vaultAddress.toLowerCase() } : {}),
-  };
+  const variables = { accountAddress: accountAddress.toLowerCase() };
   const { user } = await graphqlRequest<UserBalancesQueryData>(url, query, variables, isAmplifiHosted);
   if (user === null) return null;
   if (typeof user !== 'object' || !Array.isArray(user.vaultShares)) {
@@ -206,7 +203,6 @@ export async function getAllUserBalances(
           publishedUrl,
           accountAddress,
           strUserBalancesQuery,
-          undefined,
           isAmplifiHosted,
         );
         storeResult(key, result);
@@ -241,7 +237,7 @@ export async function getAllUserBalances(
         : {
             vaultAddress,
             shares: formatBigInt(shares, ichiVaultDecimals),
-            stakedShares: balance.stakedVaultShareBalance,
+            stakedShares: formatBigInt(stakedShares, ichiVaultDecimals),
           };
     });
   } else {
@@ -351,7 +347,6 @@ export async function getAllUserAmounts(
           publishedUrl,
           accountAddress,
           strUserBalancesQuery,
-          undefined,
           isAmplifiHosted,
         );
         storeResult(key, result);

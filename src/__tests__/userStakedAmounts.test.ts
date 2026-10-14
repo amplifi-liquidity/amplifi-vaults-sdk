@@ -117,12 +117,12 @@ test('a DEX without MFD support uses wallet shares only', async () => {
 });
 
 test('bulk balances preserve exact share precision and keep stakedShares as a subset', async () => {
-  mockShares('9007199254740993.000000000000000001', '0.000000000000000002');
+  mockShares('9007199254740992.000000000000000001', '1.000000000000000002');
   expect(await getAllUserBalances(account, provider, SupportedDex.Velodrome)).toEqual([
-    { vaultAddress: vault, shares: '9007199254740993.000000000000000003', stakedShares: '0.000000000000000002' },
+    { vaultAddress: vault, shares: '9007199254740993.000000000000000003', stakedShares: '1.000000000000000002' },
   ]);
   expect(await getAllUserBalances(account, provider, SupportedDex.Velodrome, true)).toEqual([
-    { vaultAddress: vault, shares: 9007199254740993000000000000000003n, stakedShares: 2n },
+    { vaultAddress: vault, shares: 9007199254740993000000000000000003n, stakedShares: 1000000000000000002n },
   ]);
 });
 
