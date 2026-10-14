@@ -1194,7 +1194,9 @@ const allRewardInfo: RewardInfo[] = getAllRewardInfo(chainId, dex);
 
 This function returns user rewards (as [UserRewards](#userrewards)) for all vaults on the dex. This function is specific for Velodrome vaults.
 
-Vaults with nothing claimable return `{ vaultAddress, rewardTokens: [] }`. Decimals for reward tokens missing from the subgraph catalog are read on-chain; if that also fails, only the affected vault is omitted.
+Vaults with nothing claimable return `{ vaultAddress, rewardTokens: [] }`. Decimals for reward tokens missing from the subgraph catalog are read on-chain. If a positive reward cannot be decoded, the promise rejects with `PartialUserRewardsError` instead of returning an incomplete array as complete. The error exposes `failedVaultAddresses` and verified `rewards`; callers may display those successful rows with an explicit incomplete-data state or retry the affected vaults. Successful return shapes and raw bigint amounts are unchanged.
+
+Formatted amounts use fixed-point decimal strings, including dust balances. The exported `sendUserBalancesQueryRequest` accepts both the original `(url, account, query, vaultAddress?, isAmplifiHosted?)` signature and the 1.0.28 `(url, account, query, isAmplifiHosted?)` form; the original form still supplies the lowercase `vaultAddress` query variable.
 
 ```typescript
 import { getAllUserRewards, SupportedDex } from '@amplifi-liquidity/amplifi-vaults-sdk';

@@ -24,6 +24,20 @@ import {
 } from '../utils/multicallUtils';
 import { isTokenDecimals } from '../graphql/rewardVaults';
 
+/** An incomplete reward read is never presented as a complete array of rewards. */
+export class PartialUserRewardsError extends Error {
+  readonly failedVaultAddresses: string[];
+
+  readonly rewards: (UserRewards | UserRewardsBN)[];
+
+  constructor(failedVaultAddresses: string[], rewards: (UserRewards | UserRewardsBN)[]) {
+    super(`Reward reads unavailable for ${failedVaultAddresses.length} vaults`);
+    this.name = 'PartialUserRewardsError';
+    this.failedVaultAddresses = failedVaultAddresses;
+    this.rewards = rewards;
+  }
+}
+
 type ClaimableReward = { token: string; tokenDecimals?: number; rewardAmount: bigint };
 
 /** Pair claimable tokens with catalog decimals; zero amounts for tokens missing from the catalog are dropped. */
@@ -179,12 +193,13 @@ export async function getAllUserRewards(
     }
   }
 
-  return vaults.flatMap((vault: VaultWithRewards, index: number): (UserRewards | UserRewardsBN)[] => {
+  const failedVaultAddresses: string[] = [];
+  const rewards = vaults.flatMap((vault: VaultWithRewards, index: number): (UserRewards | UserRewardsBN)[] => {
     let rewardTokens: UserRewardsByTokenBN[];
     try {
       rewardTokens = withDecimals(claimable[index], onChainDecimals);
     } catch {
-      console.error(`Could not resolve reward token decimals for vault ${vault.id}`);
+      failedVaultAddresses.push(vault.id);
       return [];
     }
     return [
@@ -193,4 +208,6 @@ export async function getAllUserRewards(
         : { vaultAddress: vault.id, rewardTokens: formattedRewards(rewardTokens) },
     ];
   });
+  if (failedVaultAddresses.length > 0) throw new PartialUserRewardsError(failedVaultAddresses, rewards);
+  return rewards;
 }

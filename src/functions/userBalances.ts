@@ -145,9 +145,16 @@ export async function sendUserBalancesQueryRequest(
   url: string,
   accountAddress: string,
   query: string,
-  isAmplifiHosted?: boolean,
+  vaultAddressOrHosted?: string | boolean,
+  legacyIsAmplifiHosted?: boolean,
 ): Promise<UserBalancesQueryData['user']> {
-  const variables = { accountAddress: accountAddress.toLowerCase() };
+  const isAmplifiHosted = typeof vaultAddressOrHosted === 'boolean' ? vaultAddressOrHosted : legacyIsAmplifiHosted;
+  const variables = {
+    accountAddress: accountAddress.toLowerCase(),
+    ...(typeof vaultAddressOrHosted === 'string' && vaultAddressOrHosted
+      ? { vaultAddress: vaultAddressOrHosted.toLowerCase() }
+      : {}),
+  };
   const { user } = await graphqlRequest<UserBalancesQueryData>(url, query, variables, isAmplifiHosted);
   if (user === null) return null;
   if (typeof user !== 'object' || !Array.isArray(user.vaultShares)) {

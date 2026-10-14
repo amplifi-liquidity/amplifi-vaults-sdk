@@ -147,7 +147,7 @@ test('a positive reward token absent from metadata uses on-chain decimals', asyn
   ]);
 });
 
-test('an unresolvable reward token omits only the vault holding it', async () => {
+test('an unresolvable reward token reports partiality and preserves verified rows', async () => {
   request.mockResolvedValue({ ichiVaults: [vault(1), vault(2)] });
   (multicall as jest.Mock)
     .mockResolvedValueOnce([
@@ -155,9 +155,11 @@ test('an unresolvable reward token omits only the vault holding it', async () =>
       { success: true, returnData: iface.encodeFunctionResult('claimableRewards', [[token], [1230000n]]) },
     ])
     .mockResolvedValueOnce([{ success: false, returnData: '0x' }]);
-  expect(await getAllUserRewards(account, provider, SupportedDex.Velodrome, true)).toEqual([
-    { vaultAddress: vaultId(2), rewardTokens: [{ token, tokenDecimals: 6, rewardAmount: 1230000n }] },
-  ]);
+  await expect(getAllUserRewards(account, provider, SupportedDex.Velodrome, true)).rejects.toMatchObject({
+    name: 'PartialUserRewardsError',
+    failedVaultAddresses: [vaultId(1)],
+    rewards: [{ vaultAddress: vaultId(2), rewardTokens: [{ token, tokenDecimals: 6, rewardAmount: 1230000n }] }],
+  });
 });
 
 test('a zero-amount reward token absent from metadata is omitted without failing other vaults', async () => {
