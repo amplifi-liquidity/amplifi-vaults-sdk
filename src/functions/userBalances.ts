@@ -36,6 +36,7 @@ import { isMfdEnabled } from '../utils/isVelodrome';
 import { graphqlRequest } from '../graphql/functions';
 
 const promises: Record<string, Promise<any>> = {};
+const VAULT_SHARE_NUMBER = /^\d+(?:\.\d+)?(?:[eE][+-]?\d+)?$/;
 
 /**
  * Helper function to get token address regardless of naming convention (token0/1 or tokenA/B)
@@ -121,33 +122,45 @@ export async function getUserBalance(
     : _getUserBalance(accountAddress, vaultAddress, jsonProvider, vault.farmingContract || null);
 }
 
+/** Owned shares: wallet balance plus, on MFD dexes, shares staked in the farming contract. */
+function shareParts(share: VaultShares, isVelodrome: boolean) {
+  const wallet = parseBigInt(share.vaultShareBalance, ichiVaultDecimals);
+  const staked = isVelodrome ? parseBigInt(share.stakedVaultShareBalance || '0', ichiVaultDecimals) : 0n;
+  return { wallet, staked, total: wallet + staked };
+}
+
+// parseBigInt alone accepts '', '-1' and '1.2.3', so the shape is checked first.
+function assertShareBalance(value: unknown) {
+  if (typeof value !== 'string' || !VAULT_SHARE_NUMBER.test(value)) {
+    throw new Error('Malformed user vault share balance');
+  }
+  try {
+    parseBigInt(value, ichiVaultDecimals);
+  } catch {
+    throw new Error('Malformed user vault share balance');
+  }
+}
+
 export async function sendUserBalancesQueryRequest(
   url: string,
   accountAddress: string,
   query: string,
-  vaultAddress?: string,
   isAmplifiHosted?: boolean,
 ): Promise<UserBalancesQueryData['user']> {
-  if (vaultAddress) {
-    return graphqlRequest<UserBalancesQueryData, { accountAddress: string; vaultAddress: string }>(
-      url,
-      query,
-      {
-        accountAddress: accountAddress.toLowerCase(),
-        vaultAddress: vaultAddress.toLowerCase(),
-      },
-      isAmplifiHosted,
-    ).then(({ user }) => user);
-  } else {
-    return graphqlRequest<UserBalancesQueryData, { accountAddress: string }>(
-      url,
-      query,
-      {
-        accountAddress: accountAddress.toLowerCase(),
-      },
-      isAmplifiHosted,
-    ).then(({ user }) => user);
+  const variables = { accountAddress: accountAddress.toLowerCase() };
+  const { user } = await graphqlRequest<UserBalancesQueryData>(url, query, variables, isAmplifiHosted);
+  if (user === null) return null;
+  if (typeof user !== 'object' || !Array.isArray(user.vaultShares)) {
+    throw new Error('Malformed user balance response');
   }
+  user.vaultShares.forEach((balance) => {
+    if (!balance?.vault || typeof balance.vault.id !== 'string' || !balance.vault.id) {
+      throw new Error('Malformed user vault identity');
+    }
+    assertShareBalance(balance.vaultShareBalance);
+    if (balance.stakedVaultShareBalance !== undefined) assertShareBalance(balance.stakedVaultShareBalance);
+  });
+  return user;
 }
 function storeResult(key: string, result: any) {
   const cacheTtl =
@@ -181,7 +194,6 @@ export async function getAllUserBalances(
   const { publishedUrl, url, isAmplifiHosted } = getGraphUrls(chainId, dex, true);
   const isVelodrome = isMfdEnabled(chainId, dex);
 
-  let shares: UserBalanceInVault[];
   const key = `${chainId}-${dex}-${accountAddress}-balances`;
   if (!Object.prototype.hasOwnProperty.call(promises, key)) {
     const strUserBalancesQuery = getUserBalancesQuery(chainId, dex);
@@ -191,7 +203,6 @@ export async function getAllUserBalances(
           publishedUrl,
           accountAddress,
           strUserBalancesQuery,
-          undefined,
           isAmplifiHosted,
         );
         storeResult(key, result);
@@ -215,25 +226,20 @@ export async function getAllUserBalances(
   const balances = await promises[key];
   if (balances) {
     const userBalances = (balances as UserBalances).vaultShares;
-    shares = userBalances.map((balance) => {
-      const vShares = isVelodrome
-        ? (Number(balance.vaultShareBalance) + Number(balance.stakedVaultShareBalance)).toString()
-        : balance.vaultShareBalance;
-      return isVelodrome
-        ? { vaultAddress: balance.vault.id, shares: vShares, stakedShares: balance.stakedVaultShareBalance }
-        : { vaultAddress: balance.vault.id, shares: balance.vaultShareBalance };
+    return userBalances.map((balance): UserBalanceInVault | UserBalanceInVaultBN => {
+      const vaultAddress = balance.vault.id;
+      const { staked: stakedShares, total: shares } = shareParts(balance, isVelodrome);
+      if (!isVelodrome) {
+        return raw ? { vaultAddress, shares } : { vaultAddress, shares: balance.vaultShareBalance };
+      }
+      return raw
+        ? { vaultAddress, shares, stakedShares }
+        : {
+            vaultAddress,
+            shares: formatBigInt(shares, ichiVaultDecimals),
+            stakedShares: formatBigInt(stakedShares, ichiVaultDecimals),
+          };
     });
-    return raw
-      ? shares.map((s) => {
-          return isVelodrome
-            ? {
-                vaultAddress: s.vaultAddress,
-                shares: parseBigInt(s.shares, ichiVaultDecimals),
-                stakedShares: parseBigInt(s.stakedShares || '0', ichiVaultDecimals),
-              }
-            : { vaultAddress: s.vaultAddress, shares: parseBigInt(s.shares, ichiVaultDecimals) };
-        })
-      : shares;
   } else {
     return [];
   }
@@ -330,6 +336,7 @@ export async function getAllUserAmounts(
 ) {
   const { chainId } = await getChainByProvider(jsonProvider);
   const { publishedUrl, url, isAmplifiHosted } = getGraphUrls(chainId, dex, true);
+  const isVelodrome = isMfdEnabled(chainId, dex);
 
   const key = `${chainId}-${dex}-${accountAddress}-all-user-amounts`;
   if (!Object.prototype.hasOwnProperty.call(promises, key)) {
@@ -340,7 +347,6 @@ export async function getAllUserAmounts(
           publishedUrl,
           accountAddress,
           strUserBalancesQuery,
-          undefined,
           isAmplifiHosted,
         );
         storeResult(key, result);
@@ -396,7 +402,7 @@ export async function getAllUserAmounts(
       const token0Decimals = decodeDecimalsResult(results[baseIndex + 2], token0Address);
       const token1Decimals = decodeDecimalsResult(results[baseIndex + 3], token1Address);
 
-      const userBalance = parseBigInt(share.vaultShareBalance, ichiVaultDecimals);
+      const userBalance = shareParts(share, isVelodrome).total;
 
       if (totalSupply !== 0n) {
         const amount0 = (userBalance * totalAmounts.total0) / totalSupply;

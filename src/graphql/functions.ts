@@ -48,6 +48,7 @@ export async function graphqlRequest<TResult, TVariables extends Record<string, 
   query: string,
   variables?: TVariables,
   isAmplifiHosted?: boolean,
+  requestTimeoutMs?: number,
 ): Promise<TResult> {
   const headers = isAmplifiHosted ? getAmplifiHeaders() : undefined;
   try {
@@ -56,7 +57,7 @@ export async function graphqlRequest<TResult, TVariables extends Record<string, 
       document: query,
       variables,
       requestHeaders: headers,
-      signal: AbortSignal.timeout(subgraphRequestTimeoutMs()),
+      signal: AbortSignal.timeout(Math.min(subgraphRequestTimeoutMs(), requestTimeoutMs ?? Number.POSITIVE_INFINITY)),
     });
   } catch (error) {
     try {

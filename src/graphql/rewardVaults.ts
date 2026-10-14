@@ -1,0 +1,65 @@
+// The existing request module imports SDK-exported query types through the public barrel.
+// eslint-disable-next-line import/no-cycle
+import { graphqlRequest } from './functions';
+import { VaultWithRewards } from '../types';
+import { REWARD_PAGE_SIZE } from './queries';
+
+const MAX_PAGES = 64;
+const READ_TIMEOUT_MS = 30000;
+
+/** Subgraph tokenDecimals is Int!; anything else fails closed. */
+export function isTokenDecimals(value: unknown): value is number {
+  return Number.isInteger(value) && (value as number) >= 0;
+}
+
+/** Read the whole ID-ordered reward catalog before a caller may cache it. */
+export default async function readAllRewardVaultPages<T extends VaultWithRewards>(
+  url: string,
+  query: string,
+  isAmplifiHosted?: boolean,
+): Promise<T[]> {
+  const deadline = Date.now() + READ_TIMEOUT_MS;
+  const result: T[] = [];
+  let afterId = '';
+  for (let page = 0; page < MAX_PAGES; page += 1) {
+    const remainingMs = deadline - Date.now();
+    if (remainingMs <= 0) throw new Error('Reward catalog read deadline exceeded');
+    // Each page depends on the previous ID cursor.
+    // eslint-disable-next-line no-await-in-loop
+    const response = await graphqlRequest<{ ichiVaults: T[] }, { afterId: string }>(
+      url,
+      query,
+      { afterId },
+      isAmplifiHosted,
+      remainingMs,
+    );
+    if (!Array.isArray(response?.ichiVaults) || response.ichiVaults.length > REWARD_PAGE_SIZE) {
+      throw new Error('Malformed reward catalog page');
+    }
+    for (let rowIndex = 0; rowIndex < response.ichiVaults.length; rowIndex += 1) {
+      const row = response.ichiVaults[rowIndex];
+      const farm = row?.farmingContract;
+      if (
+        !row ||
+        typeof row.id !== 'string' ||
+        !row.id ||
+        row.id <= afterId ||
+        !farm ||
+        typeof farm.id !== 'string' ||
+        !farm.id ||
+        !Array.isArray(farm.rewardTokens)
+      ) {
+        throw new Error('Malformed or unordered reward catalog entry');
+      }
+      farm.rewardTokens.forEach((token) => {
+        if (!token || typeof token.token !== 'string' || !token.token || !isTokenDecimals(token.tokenDecimals)) {
+          throw new Error('Malformed reward token metadata');
+        }
+      });
+      result.push(row);
+      afterId = row.id;
+    }
+    if (response.ichiVaults.length < REWARD_PAGE_SIZE) return result;
+  }
+  throw new Error('Reward catalog page limit exceeded before completion');
+}

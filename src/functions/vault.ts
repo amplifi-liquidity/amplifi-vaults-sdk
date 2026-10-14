@@ -1,17 +1,13 @@
 import { JsonRpcProvider } from 'ethers';
 import { SupportedDex, SupportedChainId, IchiVault, VaultWithRewards } from '../types';
 // eslint-disable-next-line import/no-cycle
-import {
-  AllRewardVaultsQueryResponse,
-  VaultQueryData,
-  VaultsByPoolQueryData,
-  VaultsByTokensQueryData,
-} from '../types/vaultQueryData';
+import { VaultQueryData, VaultsByPoolQueryData, VaultsByTokensQueryData } from '../types/vaultQueryData';
 import { getIchiVaultContract } from '../contracts';
 import { allRewardVaults, getVaultQuery, vaultByPoolQuery, vaultByTokensQuery } from '../graphql/queries';
 import { getGraphUrls } from '../utils/getGraphUrls';
 import cache, { TTL_1H, TTL_6H } from '../utils/cache';
 import { graphqlRequest } from '../graphql/functions';
+import readAllRewardVaultPages from '../graphql/rewardVaults';
 
 const chainIdCache = new WeakMap<JsonRpcProvider, SupportedChainId>();
 
@@ -125,16 +121,6 @@ async function sendVaultsByPoolQueryRequest(
     isAmplifiHosted,
   ).then(({ deployICHIVaults }) => deployICHIVaults);
 }
-async function sendAllRewardVaultsQueryRequest(
-  url: string,
-  query: string,
-  isAmplifiHosted?: boolean,
-): Promise<VaultWithRewards[]> {
-  return graphqlRequest<AllRewardVaultsQueryResponse>(url, query, undefined, isAmplifiHosted).then(
-    ({ ichiVaults }) => ichiVaults,
-  );
-}
-
 export async function getIchiVaultInfo(
   chainId: SupportedChainId,
   dex: SupportedDex,
@@ -314,7 +300,7 @@ export async function getAllRewardVaults(chainId: SupportedChainId, dex: Support
 
   try {
     if (publishedUrl) {
-      const result = await sendAllRewardVaultsQueryRequest(publishedUrl, allRewardVaults, isAmplifiHosted);
+      const result = await readAllRewardVaultPages<VaultWithRewards>(publishedUrl, allRewardVaults, isAmplifiHosted);
       cache.set(key, result, ttl);
       return result;
     }
@@ -324,7 +310,7 @@ export async function getAllRewardVaults(chainId: SupportedChainId, dex: Support
       console.error('Request to published graph URL failed:', error);
     }
     try {
-      const result = await sendAllRewardVaultsQueryRequest(url, allRewardVaults);
+      const result = await readAllRewardVaultPages<VaultWithRewards>(url, allRewardVaults);
       cache.set(key, result, ttl);
       return result;
     } catch (error2) {

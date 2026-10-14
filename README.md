@@ -664,6 +664,8 @@ const amountsBN: [BigNumber, BigNumber] & {amount0: BigNumber, amount1: BigNumbe
 
 This function returns user balances (as [UserBalanceInVault](#userbalanceinvault) or [UserBalanceInVaultBN](#userbalanceinvaultbn)) for all vaults on the specified decentralized exchange (DEX). The result is cached for 2 minutes by default. You can set your own cache TTL by adding the CACHE_TTL environment variable in millisecond. For example, CACHE_TTL = 60000 is 1 minute.
 
+For MFD-enabled vaults, `shares` is wallet plus staked shares and `stakedShares` is the staked subset already included in `shares` (do not add it again). Malformed subgraph data rejects rather than returning `[]`.
+
 ```typescript
 import { getAllUserBalances, SupportedDex, UserBalanceInVault, UserBalanceInVaultBN } from '@amplifi-liquidity/amplifi-vaults-sdk';
 
@@ -698,6 +700,8 @@ const userBalancesInVaultsBN: UserBalanceInVaultBN[] = await getAllUserBalances(
 | raw   | true | undefined | false |
 
 This function returns user token amounts (as [UserAmountsInVault](#useramountsinvault) or [UserAmountsInVaultBN](#useramountsinvaultbn)) in all vaults on the specified decentralized exchange (DEX). The result is cached for 2 minutes by default. You can set your own cache TTL by adding the CACHE_TTL environment variable in millisecond. For example, CACHE_TTL = 60000 is 1 minute.
+
+For MFD-enabled vaults, amounts include both wallet and staked shares.
 
 ```typescript
 import { getAllUserAmounts, SupportedDex, UserAmountsInVault, UserAmountsInVaultBN } from '@amplifi-liquidity/amplifi-vaults-sdk';
@@ -1168,6 +1172,8 @@ const rewardInfo: RewardInfo = getRewardInfo(chainId, dex, vaultAddress);
 
 This function returns an array of [RewardInfo](#rewardinfo) about reward rates and farming contracts for all vaults on the dex. This function is specific for Velodrome vaults.
 
+Only vaults with a farming contract are returned, so this is not a complete vault list. The catalog is read in full (paginated) and malformed or incomplete reads reject rather than being cached.
+
 ```typescript
 import { getAllRewardInfo, SupportedChainId, SupportedDex } from '@amplifi-liquidity/amplifi-vaults-sdk';
 
@@ -1187,6 +1193,8 @@ const allRewardInfo: RewardInfo[] = getAllRewardInfo(chainId, dex);
 | raw   | true | undefined | - | false |
 
 This function returns user rewards (as [UserRewards](#userrewards)) for all vaults on the dex. This function is specific for Velodrome vaults.
+
+Vaults with nothing claimable return `{ vaultAddress, rewardTokens: [] }`. Decimals for reward tokens missing from the subgraph catalog are read on-chain; if that also fails, only the affected vault is omitted.
 
 ```typescript
 import { getAllUserRewards, SupportedDex } from '@amplifi-liquidity/amplifi-vaults-sdk';
@@ -1210,6 +1218,8 @@ const rewards: UserRewards[] = await getAllUserRewards(account, provider, dex);
 | raw   | true | undefined | - | false |
 
 This function returns claimable reward amounts (as [UserRewardsByToken](#userrewardsbytoken) or [UserRewardsByTokenBN](#userrewardsbytokenbn)) for the specified vault and user account. This function is specific for Velodrome vaults.
+
+Decimals for reward tokens missing from vault metadata are read on-chain; the call rejects only if that also fails. A vault without a farming contract returns `[]`.
 
 ```typescript
 import { getUserRewards, SupportedDex } from '@amplifi-liquidity/amplifi-vaults-sdk';

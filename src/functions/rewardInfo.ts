@@ -7,9 +7,10 @@ import { RewardInfo, SupportedChainId, SupportedDex } from '../types';
 import cache, { TTL_6H } from '../utils/cache';
 import { getGraphUrls } from '../utils/getGraphUrls';
 import { allRewardInfoQuery, rewardInfoQuery } from '../graphql/queries';
-import { AllRewardInfoQueryResponse, RewardInfoQueryResponse } from '../types/vaultQueryData';
+import { RewardInfoQueryResponse } from '../types/vaultQueryData';
 import { isMfdEnabled } from '../utils/isVelodrome';
 import { graphqlRequest } from '../graphql/functions';
+import readAllRewardVaultPages from '../graphql/rewardVaults';
 
 async function sendRewardInfoQueryRequest(
   url: string,
@@ -25,16 +26,6 @@ async function sendRewardInfoQueryRequest(
     },
     isAmplifiHosted,
   ).then(({ ichiVault }) => ichiVault);
-}
-
-async function sendAllRewardInfoQueryRequest(
-  url: string,
-  query: string,
-  isAmplifiHosted?: boolean,
-): Promise<RewardInfo[]> {
-  return graphqlRequest<AllRewardInfoQueryResponse>(url, query, undefined, isAmplifiHosted).then(
-    ({ ichiVaults }) => ichiVaults,
-  );
 }
 
 export async function getRewardInfo(
@@ -93,7 +84,7 @@ export async function getAllRewardInfo(chainId: SupportedChainId, dex: Supported
 
   try {
     if (publishedUrl) {
-      const result = await sendAllRewardInfoQueryRequest(publishedUrl, allRewardInfoQuery, isAmplifiHosted);
+      const result = await readAllRewardVaultPages<RewardInfo>(publishedUrl, allRewardInfoQuery, isAmplifiHosted);
       cache.set(key, result, ttl);
       return result;
     }
@@ -103,7 +94,7 @@ export async function getAllRewardInfo(chainId: SupportedChainId, dex: Supported
       console.error('Request to published graph URL failed:', error);
     }
     try {
-      const result = await sendAllRewardInfoQueryRequest(url, allRewardInfoQuery);
+      const result = await readAllRewardVaultPages<RewardInfo>(url, allRewardInfoQuery);
       cache.set(key, result, ttl);
       return result;
     } catch (error2) {

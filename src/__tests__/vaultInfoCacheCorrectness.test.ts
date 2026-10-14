@@ -36,7 +36,7 @@ beforeEach(() => {
     const id = `${url}#${requestCount}`;
     return {
       ichiVault: { id, token0: 'a', token1: 'b', allowToken0: true, allowToken1: false },
-      ichiVaults: [{ id, allowTokenA: true, allowTokenB: true }],
+      ichiVaults: [{ id, allowTokenA: true, allowTokenB: true, farmingContract: { id: address, rewardTokens: [] } }],
       deployICHIVaults: [id],
     };
   });
