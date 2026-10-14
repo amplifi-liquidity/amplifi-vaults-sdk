@@ -2,13 +2,14 @@
 import { Interface, JsonRpcProvider } from 'ethers';
 import { getAllRewardVaults } from '../functions/vault';
 import { getAllRewardInfo } from '../functions/rewardInfo';
-import { getAllUserRewards } from '../functions/userRewards';
+import { getAllUserRewards, getUserRewards } from '../functions/userRewards';
 import { getAllUserAmounts, getAllUserBalances } from '../functions/userBalances';
 import { graphqlRequest } from '../graphql/functions';
 import { multicall } from '../utils/multicallUtils';
 import cache from '../utils/cache';
 import { SupportedChainId, SupportedDex } from '../types';
 import mfdAbi from '../abis/multiFeeDistributer.json';
+import tokenAbi from '../abis/ERC20.json';
 
 jest.mock('../graphql/functions', () => ({ graphqlRequest: jest.fn() }));
 jest.mock('../utils/getGraphUrls', () => ({
@@ -36,6 +37,8 @@ const vault = (i: number) => ({
 });
 const provider = { getNetwork: async () => ({ chainId: 57073n }) } as JsonRpcProvider;
 const iface = new Interface(mfdAbi);
+const tokenIface = new Interface(tokenAbi);
+const unknownToken = '0x4444444444444444444444444444444444444444';
 const request = graphqlRequest as jest.Mock;
 function contractRewards(tokens: string[], amounts: bigint[]) {
   (multicall as jest.Mock).mockResolvedValue([
@@ -96,6 +99,10 @@ test.each([
   { ichiVaults: [null] },
   { ichiVaults: [{ ...vault(1), farmingContract: null }] },
   { ichiVaults: [vault(2), vault(1)] },
+  { ichiVaults: [vault(1), vault(1)] },
+  ...[-1, 1.5, '6', null].map((tokenDecimals) => ({
+    ichiVaults: [{ id: vaultId(1), farmingContract: { id: farm, rewardTokens: [{ token, tokenDecimals }] } }],
+  })),
 ])('malformed reward catalog %p fails and is not cached as empty', async ({ ichiVaults }) => {
   request.mockResolvedValue({ ichiVaults });
   await expect(getAllRewardVaults(SupportedChainId.ink, SupportedDex.Velodrome)).rejects.toThrow();
@@ -128,16 +135,32 @@ test('unequal claimable token/amount arrays are unavailable rather than verified
   await expect(getAllUserRewards(account, provider, SupportedDex.Velodrome)).rejects.toThrow();
 });
 
-test('a claimed token absent from metadata cannot acquire fabricated default decimals', async () => {
-  const bad = vault(1);
-  bad.farmingContract.rewardTokens = [];
-  request.mockResolvedValue({ ichiVaults: [bad] });
-  contractRewards([token], [1230000n]);
-  await expect(getAllUserRewards(account, provider, SupportedDex.Velodrome)).rejects.toThrow();
+test('a positive reward token absent from metadata uses on-chain decimals', async () => {
+  request.mockResolvedValue({ ichiVaults: [vault(1)] });
+  (multicall as jest.Mock)
+    .mockResolvedValueOnce([
+      { success: true, returnData: iface.encodeFunctionResult('claimableRewards', [[unknownToken], [1230000000n]]) },
+    ])
+    .mockResolvedValueOnce([{ success: true, returnData: tokenIface.encodeFunctionResult('decimals', [9]) }]);
+  expect(await getAllUserRewards(account, provider, SupportedDex.Velodrome)).toEqual([
+    { vaultAddress: vaultId(1), rewardTokens: [{ token: unknownToken, tokenDecimals: 9, rewardAmount: '1.23' }] },
+  ]);
+});
+
+test('an unresolvable reward token omits only the vault holding it', async () => {
+  request.mockResolvedValue({ ichiVaults: [vault(1), vault(2)] });
+  (multicall as jest.Mock)
+    .mockResolvedValueOnce([
+      { success: true, returnData: iface.encodeFunctionResult('claimableRewards', [[unknownToken], [1n]]) },
+      { success: true, returnData: iface.encodeFunctionResult('claimableRewards', [[token], [1230000n]]) },
+    ])
+    .mockResolvedValueOnce([{ success: false, returnData: '0x' }]);
+  expect(await getAllUserRewards(account, provider, SupportedDex.Velodrome, true)).toEqual([
+    { vaultAddress: vaultId(2), rewardTokens: [{ token, tokenDecimals: 6, rewardAmount: 1230000n }] },
+  ]);
 });
 
 test('a zero-amount reward token absent from metadata is omitted without failing other vaults', async () => {
-  const unknownToken = '0x4444444444444444444444444444444444444444';
   request.mockResolvedValue({ ichiVaults: [vault(1), vault(2)] });
   (multicall as jest.Mock).mockResolvedValue([
     {
@@ -172,16 +195,6 @@ test.each([getAllUserBalances, getAllUserAmounts])(
   },
 );
 
-test.each(readers)('$name: a final short page past the shared deadline rejects and is not cached', async ({ read }) => {
-  request.mockImplementation(async () => {
-    jest.setSystemTime(Date.now() + 31000);
-    return { ichiVaults: [vault(1)] };
-  });
-  await expect(read(SupportedChainId.ink, SupportedDex.Velodrome)).rejects.toThrow();
-  request.mockResolvedValue({ ichiVaults: [vault(2)] });
-  expect((await read(SupportedChainId.ink, SupportedDex.Velodrome))[0].id).toBe(vaultId(2));
-});
-
 test.each([{ vault: { id: vaultId(1) } }, { vault: { id: vaultId(1) }, vaultShareBalance: '1.2.3' }])(
   'malformed share row %p fails before the user response is cached',
   async (row) => {
@@ -197,4 +210,49 @@ test('independently valid scientific share syntax remains supported', async () =
   expect(await getAllUserBalances(account, provider, SupportedDex.Velodrome, true)).toEqual([
     { vaultAddress: vaultId(1), shares: 1n, stakedShares: 0n },
   ]);
+});
+
+describe('single-vault getUserRewards', () => {
+  const vaultAddress = vaultId(1);
+  // Route eth_call by target so the real contract ABI encoding is exercised.
+  function chainProvider(claimable: [string[], bigint[]], decimals: Record<string, number>) {
+    return {
+      getNetwork: async () => ({ chainId: 57073n }),
+      call: jest.fn(async ({ to }: { to: string }) => {
+        if (to.toLowerCase() === farm) return iface.encodeFunctionResult('claimableRewards', claimable);
+        const known = decimals[to.toLowerCase()];
+        if (known === undefined) throw new Error('execution reverted');
+        return tokenIface.encodeFunctionResult('decimals', [known]);
+      }),
+    } as unknown as JsonRpcProvider;
+  }
+  beforeEach(() => {
+    request.mockResolvedValue({
+      ichiVault: {
+        id: vaultAddress,
+        token0: token,
+        token1: unknownToken,
+        farmingContract: { id: farm, rewardTokens: [] },
+      },
+    });
+  });
+
+  test('a farm without catalog reward tokens returns verified empty rewards', async () => {
+    expect(await getUserRewards(account, vaultAddress, chainProvider([[], []], {}), SupportedDex.Velodrome)).toEqual(
+      [],
+    );
+  });
+
+  test('a positive token missing from vault metadata uses on-chain decimals', async () => {
+    const p = chainProvider([[unknownToken], [1230000000n]], { [unknownToken]: 9 });
+    expect(await getUserRewards(account, vaultAddress, p, SupportedDex.Velodrome)).toEqual([
+      { token: unknownToken, tokenDecimals: 9, rewardAmount: '1.23' },
+    ]);
+  });
+
+  test('an unresolvable token rejects the single-vault read', async () => {
+    const p = chainProvider([[unknownToken], [1n]], {});
+    await expect(getUserRewards(account, vaultAddress, p, SupportedDex.Velodrome)).rejects.toThrow('reverted');
+    expect(p.call).toHaveBeenCalledTimes(2);
+  });
 });

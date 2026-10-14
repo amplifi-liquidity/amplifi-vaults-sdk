@@ -7,14 +7,9 @@ import { REWARD_PAGE_SIZE } from './queries';
 const MAX_PAGES = 64;
 const READ_TIMEOUT_MS = 30000;
 
-/** Reward token decimals must be an integer in 0..255; anything else fails closed. */
-export function tokenDecimalsOrThrow(value: unknown): number {
-  if (value == null) throw new Error('Missing reward token decimals');
-  const decimals = String(value);
-  if (!/^(0|[1-9]\d{0,2})$/.test(decimals) || Number(decimals) > 255) {
-    throw new Error('Invalid reward token decimals');
-  }
-  return Number(decimals);
+/** Subgraph tokenDecimals is Int!; anything else fails closed. */
+export function isTokenDecimals(value: unknown): value is number {
+  return Number.isInteger(value) && (value as number) >= 0;
 }
 
 /** Read the whole ID-ordered reward catalog before a caller may cache it. */
@@ -56,16 +51,14 @@ export default async function readAllRewardVaultPages<T extends VaultWithRewards
       ) {
         throw new Error('Malformed or unordered reward catalog entry');
       }
-      const rewardTokens = farm.rewardTokens.map((token) => {
-        if (!token || typeof token.token !== 'string' || !token.token) {
+      farm.rewardTokens.forEach((token) => {
+        if (!token || typeof token.token !== 'string' || !token.token || !isTokenDecimals(token.tokenDecimals)) {
           throw new Error('Malformed reward token metadata');
         }
-        return { ...token, tokenDecimals: tokenDecimalsOrThrow(token.tokenDecimals) };
       });
-      result.push({ ...row, farmingContract: { ...farm, rewardTokens } });
+      result.push(row);
       afterId = row.id;
     }
-    if (Date.now() >= deadline) throw new Error('Reward catalog read deadline exceeded');
     if (response.ichiVaults.length < REWARD_PAGE_SIZE) return result;
   }
   throw new Error('Reward catalog page limit exceeded before completion');

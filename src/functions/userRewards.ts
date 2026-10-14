@@ -13,24 +13,42 @@ import {
   VaultWithRewards,
 } from '../types';
 import { isMfdEnabled } from '../utils/isVelodrome';
-import { getMultiFeeDistributorContract } from '../contracts';
+import { getERC20Contract, getMultiFeeDistributorContract } from '../contracts';
 import formatBigInt from '../utils/formatBigInt';
-import { decodeFarmingRewardsResult, encodeFarmingRewardsCall, multicall } from '../utils/multicallUtils';
-import { tokenDecimalsOrThrow } from '../graphql/rewardVaults';
+import {
+  decodeDecimalsResult,
+  decodeFarmingRewardsResult,
+  encodeDecimalsCall,
+  encodeFarmingRewardsCall,
+  multicall,
+} from '../utils/multicallUtils';
+import { isTokenDecimals } from '../graphql/rewardVaults';
 
-function verifiedClaimableRewards(
+type ClaimableReward = { token: string; tokenDecimals?: number; rewardAmount: bigint };
+
+/** Pair claimable tokens with catalog decimals; zero amounts for tokens missing from the catalog are dropped. */
+function claimableRewards(
   tokens: string[],
   amounts: bigint[],
   metadata: Pick<RewardToken, 'token' | 'tokenDecimals'>[] | undefined,
-): UserRewardsByTokenBN[] {
+): ClaimableReward[] {
   if (tokens.length !== amounts.length) {
     throw new Error('Malformed claimable reward arrays');
   }
   // Decoded ethers Results would make flatMap return a Result; copy to a plain array first.
   return Array.from(tokens).flatMap((token, index) => {
     const decimals = metadata?.find((entry) => entry.token.toLowerCase() === token.toLowerCase())?.tokenDecimals;
-    if (decimals == null && amounts[index] === 0n) return [];
-    return [{ token, tokenDecimals: tokenDecimalsOrThrow(decimals), rewardAmount: amounts[index] }];
+    if (isTokenDecimals(decimals)) return [{ token, tokenDecimals: decimals, rewardAmount: amounts[index] }];
+    return amounts[index] === 0n ? [] : [{ token, rewardAmount: amounts[index] }];
+  });
+}
+
+/** Fill decimals missing from the catalog with on-chain values; formatted amounts never assume 18. */
+function withDecimals(rewards: ClaimableReward[], onChainDecimals: Map<string, number>): UserRewardsByTokenBN[] {
+  return rewards.map((reward) => {
+    const tokenDecimals = reward.tokenDecimals ?? onChainDecimals.get(reward.token.toLowerCase());
+    if (tokenDecimals === undefined) throw new Error(`Could not resolve decimals for reward token ${reward.token}`);
+    return { ...reward, tokenDecimals };
   });
 }
 
@@ -77,7 +95,18 @@ export async function getUserRewards(
 
   const mfdContract = getMultiFeeDistributorContract(vault.farmingContract, jsonProvider);
   const result = await mfdContract.claimableRewards(accountAddress); // [[rewardTokens], [amounts]]
-  const rewards = verifiedClaimableRewards(result[0], result[1], rewardTokens);
+  const claimable = claimableRewards(result[0], result[1], rewardTokens);
+
+  // Vault metadata can lag a newly added reward token; read its decimals on-chain.
+  const onChainDecimals = new Map<string, number>();
+  await Promise.all(
+    claimable
+      .filter((reward) => reward.tokenDecimals === undefined)
+      .map(async ({ token }) => {
+        onChainDecimals.set(token.toLowerCase(), Number(await getERC20Contract(token, jsonProvider).decimals()));
+      }),
+  );
+  const rewards = withDecimals(claimable, onChainDecimals);
   return raw ? rewards : formattedRewards(rewards);
 }
 
@@ -120,12 +149,48 @@ export async function getAllUserRewards(
   // Execute multicall
   const results = await multicall(farmingContractCalls, chainId, jsonProvider);
 
-  const processedResults = vaults.map((vault: VaultWithRewards, index: number): UserRewards | UserRewardsBN => {
+  const claimable = vaults.map((vault: VaultWithRewards, index: number) => {
     const [tokens, amounts] = decodeFarmingRewardsResult(results[index], vault.farmingContract.id);
-    const rewardTokens = verifiedClaimableRewards(tokens, amounts, vault.farmingContract.rewardTokens);
-    return raw
-      ? { vaultAddress: vault.id, rewardTokens }
-      : { vaultAddress: vault.id, rewardTokens: formattedRewards(rewardTokens) };
+    return claimableRewards(tokens, amounts, vault.farmingContract.rewardTokens);
   });
-  return processedResults;
+
+  // The catalog can lag a newly added reward token; read its decimals on-chain rather than failing the DEX.
+  const unknownTokens = Array.from(
+    new Set(
+      claimable
+        .flat()
+        .filter((reward) => reward.tokenDecimals === undefined)
+        .map((reward) => reward.token.toLowerCase()),
+    ),
+  );
+  const onChainDecimals = new Map<string, number>();
+  if (unknownTokens.length > 0) {
+    try {
+      const decimalsResults = await multicall(unknownTokens.map(encodeDecimalsCall), chainId, jsonProvider);
+      unknownTokens.forEach((token, index) => {
+        try {
+          onChainDecimals.set(token, decodeDecimalsResult(decimalsResults[index], token));
+        } catch {
+          // Left unresolved: only vaults holding a positive amount of this token are omitted below.
+        }
+      });
+    } catch {
+      // Left unresolved: only vaults holding a positive amount of an unknown token are omitted below.
+    }
+  }
+
+  return vaults.flatMap((vault: VaultWithRewards, index: number): (UserRewards | UserRewardsBN)[] => {
+    let rewardTokens: UserRewardsByTokenBN[];
+    try {
+      rewardTokens = withDecimals(claimable[index], onChainDecimals);
+    } catch {
+      console.error(`Could not resolve reward token decimals for vault ${vault.id}`);
+      return [];
+    }
+    return [
+      raw
+        ? { vaultAddress: vault.id, rewardTokens }
+        : { vaultAddress: vault.id, rewardTokens: formattedRewards(rewardTokens) },
+    ];
+  });
 }
