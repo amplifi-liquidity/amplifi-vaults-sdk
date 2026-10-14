@@ -28,14 +28,6 @@ async function sendRewardInfoQueryRequest(
   ).then(({ ichiVault }) => ichiVault);
 }
 
-async function sendAllRewardInfoQueryRequest(
-  url: string,
-  query: string,
-  isAmplifiHosted?: boolean,
-): Promise<RewardInfo[]> {
-  return readAllRewardVaultPages<RewardInfo>(url, query, isAmplifiHosted);
-}
-
 export async function getRewardInfo(
   chainId: SupportedChainId,
   dex: SupportedDex,
@@ -92,7 +84,7 @@ export async function getAllRewardInfo(chainId: SupportedChainId, dex: Supported
 
   try {
     if (publishedUrl) {
-      const result = await sendAllRewardInfoQueryRequest(publishedUrl, allRewardInfoQuery, isAmplifiHosted);
+      const result = await readAllRewardVaultPages<RewardInfo>(publishedUrl, allRewardInfoQuery, isAmplifiHosted);
       cache.set(key, result, ttl);
       return result;
     }
@@ -102,7 +94,7 @@ export async function getAllRewardInfo(chainId: SupportedChainId, dex: Supported
       console.error('Request to published graph URL failed:', error);
     }
     try {
-      const result = await sendAllRewardInfoQueryRequest(url, allRewardInfoQuery);
+      const result = await readAllRewardVaultPages<RewardInfo>(url, allRewardInfoQuery);
       cache.set(key, result, ttl);
       return result;
     } catch (error2) {

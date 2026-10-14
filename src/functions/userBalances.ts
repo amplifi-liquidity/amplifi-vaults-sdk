@@ -122,6 +122,13 @@ export async function getUserBalance(
     : _getUserBalance(accountAddress, vaultAddress, jsonProvider, vault.farmingContract || null);
 }
 
+/** Owned shares: wallet balance plus, on MFD dexes, shares staked in the farming contract. */
+function shareParts(share: VaultShares, isVelodrome: boolean) {
+  const wallet = parseBigInt(share.vaultShareBalance, ichiVaultDecimals);
+  const staked = isVelodrome ? parseBigInt(share.stakedVaultShareBalance || '0', ichiVaultDecimals) : 0n;
+  return { wallet, staked, total: wallet + staked };
+}
+
 function assertShareBalance(value: unknown) {
   if (typeof value !== 'string' || !VAULT_SHARE_NUMBER.test(value)) {
     throw new Error('Malformed user vault share balance');
@@ -225,12 +232,10 @@ export async function getAllUserBalances(
     const userBalances = (balances as UserBalances).vaultShares;
     return userBalances.map((balance): UserBalanceInVault | UserBalanceInVaultBN => {
       const vaultAddress = balance.vault.id;
-      const walletShares = parseBigInt(balance.vaultShareBalance, ichiVaultDecimals);
+      const { staked: stakedShares, total: shares } = shareParts(balance, isVelodrome);
       if (!isVelodrome) {
-        return raw ? { vaultAddress, shares: walletShares } : { vaultAddress, shares: balance.vaultShareBalance };
+        return raw ? { vaultAddress, shares } : { vaultAddress, shares: balance.vaultShareBalance };
       }
-      const stakedShares = parseBigInt(balance.stakedVaultShareBalance || '0', ichiVaultDecimals);
-      const shares = walletShares + stakedShares;
       return raw
         ? { vaultAddress, shares, stakedShares }
         : {
@@ -402,9 +407,7 @@ export async function getAllUserAmounts(
       const token0Decimals = decodeDecimalsResult(results[baseIndex + 2], token0Address);
       const token1Decimals = decodeDecimalsResult(results[baseIndex + 3], token1Address);
 
-      const userBalance =
-        parseBigInt(share.vaultShareBalance, ichiVaultDecimals) +
-        (isVelodrome ? parseBigInt(share.stakedVaultShareBalance || '0', ichiVaultDecimals) : 0n);
+      const userBalance = shareParts(share, isVelodrome).total;
 
       if (totalSupply !== 0n) {
         const amount0 = (userBalance * totalAmounts.total0) / totalSupply;

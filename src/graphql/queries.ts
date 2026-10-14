@@ -472,10 +472,13 @@ export const rewardInfoQuery = gql`
   }
 `;
 
+/** Reward catalog page size; readAllRewardVaultPages treats a shorter page as the end. */
+export const REWARD_PAGE_SIZE = 1000;
+
 export const allRewardInfoQuery = gql`
   query ($afterId: String!) {
     ichiVaults(
-      first: 1000
+      first: ${REWARD_PAGE_SIZE}
       orderBy: id
       orderDirection: asc
       where: { id_gt: $afterId, farmingContract_: { id_not: null } }
@@ -497,7 +500,7 @@ export const allRewardInfoQuery = gql`
 export const allRewardVaults = gql`
   query ($afterId: String!) {
     ichiVaults(
-      first: 1000
+      first: ${REWARD_PAGE_SIZE}
       orderBy: id
       orderDirection: asc
       where: { id_gt: $afterId, farmingContract_: { id_not: null } }

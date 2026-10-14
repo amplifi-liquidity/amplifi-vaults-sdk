@@ -182,15 +182,6 @@ test.each(readers)('$name: a final short page past the shared deadline rejects a
   expect((await read(SupportedChainId.ink, SupportedDex.Velodrome))[0].id).toBe(vaultId(2));
 });
 
-test('reward pagination fails closed when the shared read deadline expires', async () => {
-  const full = Array.from({ length: 1000 }, (_, i) => vault(i + 1));
-  request.mockImplementation(async () => {
-    jest.setSystemTime(Date.now() + 31000);
-    return { ichiVaults: full };
-  });
-  await expect(getAllRewardVaults(SupportedChainId.ink, SupportedDex.Velodrome)).rejects.toThrow();
-});
-
 test.each([{ vault: { id: vaultId(1) } }, { vault: { id: vaultId(1) }, vaultShareBalance: '1.2.3' }])(
   'malformed share row %p fails before the user response is cached',
   async (row) => {

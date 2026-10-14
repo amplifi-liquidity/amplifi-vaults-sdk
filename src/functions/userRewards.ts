@@ -4,6 +4,7 @@
 import { JsonRpcProvider } from 'ethers';
 import { getAllRewardVaults, getChainId, validateVaultData } from './vault';
 import {
+  RewardToken,
   SupportedDex,
   UserRewards,
   UserRewardsBN,
@@ -15,11 +16,12 @@ import { isMfdEnabled } from '../utils/isVelodrome';
 import { getMultiFeeDistributorContract } from '../contracts';
 import formatBigInt from '../utils/formatBigInt';
 import { decodeFarmingRewardsResult, encodeFarmingRewardsCall, multicall } from '../utils/multicallUtils';
+import { tokenDecimalsOrThrow } from '../graphql/rewardVaults';
 
 function verifiedClaimableRewards(
   tokens: string[],
   amounts: bigint[],
-  metadata: { token: string; tokenDecimals: number }[] | undefined,
+  metadata: Pick<RewardToken, 'token' | 'tokenDecimals'>[] | undefined,
 ): UserRewardsByTokenBN[] {
   if (tokens.length !== amounts.length) {
     throw new Error('Malformed claimable reward arrays');
@@ -28,10 +30,7 @@ function verifiedClaimableRewards(
   return Array.from(tokens).flatMap((token, index) => {
     const decimals = metadata?.find((entry) => entry.token.toLowerCase() === token.toLowerCase())?.tokenDecimals;
     if (decimals == null && amounts[index] === 0n) return [];
-    if (decimals == null || !Number.isInteger(Number(decimals)) || Number(decimals) < 0 || Number(decimals) > 255) {
-      throw new Error('Claimable reward is missing token decimals');
-    }
-    return [{ token, tokenDecimals: Number(decimals), rewardAmount: amounts[index] }];
+    return [{ token, tokenDecimals: tokenDecimalsOrThrow(decimals), rewardAmount: amounts[index] }];
   });
 }
 

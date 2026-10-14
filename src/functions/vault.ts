@@ -121,14 +121,6 @@ async function sendVaultsByPoolQueryRequest(
     isAmplifiHosted,
   ).then(({ deployICHIVaults }) => deployICHIVaults);
 }
-async function sendAllRewardVaultsQueryRequest(
-  url: string,
-  query: string,
-  isAmplifiHosted?: boolean,
-): Promise<VaultWithRewards[]> {
-  return readAllRewardVaultPages<VaultWithRewards>(url, query, isAmplifiHosted);
-}
-
 export async function getIchiVaultInfo(
   chainId: SupportedChainId,
   dex: SupportedDex,
@@ -308,7 +300,7 @@ export async function getAllRewardVaults(chainId: SupportedChainId, dex: Support
 
   try {
     if (publishedUrl) {
-      const result = await sendAllRewardVaultsQueryRequest(publishedUrl, allRewardVaults, isAmplifiHosted);
+      const result = await readAllRewardVaultPages<VaultWithRewards>(publishedUrl, allRewardVaults, isAmplifiHosted);
       cache.set(key, result, ttl);
       return result;
     }
@@ -318,7 +310,7 @@ export async function getAllRewardVaults(chainId: SupportedChainId, dex: Support
       console.error('Request to published graph URL failed:', error);
     }
     try {
-      const result = await sendAllRewardVaultsQueryRequest(url, allRewardVaults);
+      const result = await readAllRewardVaultPages<VaultWithRewards>(url, allRewardVaults);
       cache.set(key, result, ttl);
       return result;
     } catch (error2) {
