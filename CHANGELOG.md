@@ -2,9 +2,9 @@
 
 ## 1.0.30
 
-### Added
+### Fixed
 
-- BSC `ThenaV5Rewards` deployment configuration, including its ICHI vault factory, v2 deposit guard, Algebra Integral/MFD settings, and subgraph endpoints.
+- `getVaultsByTokens` now normalizes V2 subgraph fields (`token0`/`token1` and `allowToken0`/`allowToken1`) before filtering, so V2 deployments such as `ThenaV5Rewards` return their matching vaults.
 
 ## 1.0.29
 
