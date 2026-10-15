@@ -327,6 +327,13 @@ export const graphUrls: Record<SupportedChainId, dexGraph> = {
       supportsCollectFees: true,
       version: 2,
     },
+    [SupportedDex.ThenaV5Rewards]: {
+      url: 'https://api.studio.thegraph.com/query/88584/bsc-thena-v-1-2/version/latest',
+      publishedUrl:
+        'https://gateway.thegraph.com/api/[api-key]/deployments/id/QmWsA7KFwjLrta49t6qbqguUsPCYmMCiEiYVBj1zyDmcUT',
+      supportsCollectFees: true,
+      version: 2,
+    },
     [SupportedDex.PancakeswapV3]: {
       url: 'https://api.studio.thegraph.com/query/88584/bsc-v-3-pancakeswap/version/latest',
       publishedUrl:
