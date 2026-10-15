@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.30
+
+### Added
+
+- BSC `ThenaV5Rewards` deployment configuration, including its ICHI vault factory, v2 deposit guard, Algebra Integral/MFD settings, and subgraph endpoints.
+
 ## 1.0.29
 
 ### Fixed
