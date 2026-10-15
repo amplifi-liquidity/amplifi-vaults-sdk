@@ -1,6 +1,6 @@
 /* eslint-env jest */
 import { Interface, JsonRpcProvider } from 'ethers';
-import { getAllUserAmounts, getAllUserBalances } from '../functions/userBalances';
+import { getAllUserAmounts, getAllUserBalances, sendUserBalancesQueryRequest } from '../functions/userBalances';
 import { graphqlRequest } from '../graphql/functions';
 import { SupportedDex } from '../types';
 import { multicall } from '../utils/multicallUtils';
@@ -131,4 +131,30 @@ test('bulk balances without the optional stake remain the exact wallet total', a
   expect(await getAllUserBalances(account, provider, SupportedDex.Velodrome, true)).toEqual([
     { vaultAddress: vault, shares: 2000000000000000001n, stakedShares: 0n },
   ]);
+});
+
+test('MFD dust balances keep fixed-point decimal strings', async () => {
+  mockShares('0.000000000000000001', '0.000000000000000002');
+  expect(await getAllUserBalances(account, provider, SupportedDex.Velodrome)).toEqual([
+    { vaultAddress: vault, shares: '0.000000000000000003', stakedShares: '0.000000000000000002' },
+  ]);
+});
+
+test.each([
+  {
+    args: [vault.toUpperCase().replace('0X', '0x'), true],
+    variables: { accountAddress: account, vaultAddress: vault },
+    hosted: true,
+  },
+  { args: [undefined, true], variables: { accountAddress: account }, hosted: true },
+  { args: [true], variables: { accountAddress: account }, hosted: true },
+])('balance query preserves old and current positional arguments: $args', async ({ args, variables, hosted }) => {
+  mockShares('1');
+  await Reflect.apply(sendUserBalancesQueryRequest, undefined, [
+    'https://subgraph.example/graphql',
+    account,
+    'query',
+    ...args,
+  ]);
+  expect(graphqlRequest).toHaveBeenCalledWith('https://subgraph.example/graphql', 'query', variables, hosted);
 });

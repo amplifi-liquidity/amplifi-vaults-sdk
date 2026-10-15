@@ -43,6 +43,7 @@ This SDK contains a collection of functions to interact with Amplifi Vaults smar
         * [`getRewardInfo()`](#29-getRewardInfo)
         * [`getAllRewardInfo()`](#30-getAllRewardInfo)
         * [`getAllUserRewards()`](#31-getAllUserRewards)
+        * [`getAllUserRewardsDetailed()`](#31a-getAllUserRewardsDetailed)
         * [`getUserRewards()`](#32-getUserRewards)
         * [`claimRewards()`](#33-claimRewards)
 
@@ -1194,7 +1195,9 @@ const allRewardInfo: RewardInfo[] = getAllRewardInfo(chainId, dex);
 
 This function returns user rewards (as [UserRewards](#userrewards)) for all vaults on the dex. This function is specific for Velodrome vaults.
 
-Vaults with nothing claimable return `{ vaultAddress, rewardTokens: [] }`. Decimals for reward tokens missing from the subgraph catalog are read on-chain; if that also fails, only the affected vault is omitted.
+Vaults with nothing claimable return `{ vaultAddress, rewardTokens: [] }`. Decimals for reward tokens missing from the subgraph catalog are read on-chain; if that also fails, only the affected vault is omitted (and logged). Use [`getAllUserRewardsDetailed()`](#31a-getAllUserRewardsDetailed) to find out which vaults were omitted.
+
+Formatted amounts use fixed-point decimal strings, including dust balances. The exported `sendUserBalancesQueryRequest` accepts both the original `(url, account, query, vaultAddress?, isAmplifiHosted?)` signature and the 1.0.28 `(url, account, query, isAmplifiHosted?)` form; the original form still supplies the lowercase `vaultAddress` query variable.
 
 ```typescript
 import { getAllUserRewards, SupportedDex } from '@amplifi-liquidity/amplifi-vaults-sdk';
@@ -1205,6 +1208,27 @@ const signer = YOUR_SIGNER; // for write operations
 const dex = SupportedDex.Velodrome;
 
 const rewards: UserRewards[] = await getAllUserRewards(account, provider, dex);
+```
+
+#### 31a. `getAllUserRewardsDetailed()`
+
+| param | type |  default | required
+| -------- | -------- | -------- | --------
+| accountAddress   | string | - | true |
+| jsonProvider   | JsonRpcProvider | - | true |
+| dex   | SupportedDex | - | true |
+| raw   | true | undefined | - | false |
+
+Same read as [`getAllUserRewards()`](#31-getAllUserRewards), returned as [UserRewardsDetailed](#userrewardsdetailed) (or [UserRewardsDetailedBN](#userrewardsdetailedbn) when `raw` is `true`). `rewards` is exactly what `getAllUserRewards()` returns; `failedVaultAddresses` lists the vaults omitted because a positive reward's token decimals could not be resolved. An empty `failedVaultAddresses` means the result is complete. Callers can show the returned rows with an explicit incomplete-data state, or retry, when it is non-empty.
+
+```typescript
+import { getAllUserRewardsDetailed, SupportedDex } from '@amplifi-liquidity/amplifi-vaults-sdk';
+
+const account = "0x123...890";
+const provider = YOUR_PROVIDER; // JsonRpcProvider, BrowserProvider, etc.
+const dex = SupportedDex.Velodrome;
+
+const { rewards, failedVaultAddresses }: UserRewardsDetailed = await getAllUserRewardsDetailed(account, provider, dex);
 ```
 
 #### 32. `getUserRewards()`
@@ -1612,5 +1636,25 @@ type UserRewards = {
 type UserRewardsBN = {
   vaultAddress: string;
   rewardTokens: UserRewardsByTokenBN[];
+};
+```
+
+### UserRewardsDetailed
+
+```typescript
+
+type UserRewardsDetailed = {
+  rewards: UserRewards[];
+  failedVaultAddresses: string[];
+};
+```
+
+### UserRewardsDetailedBN
+
+```typescript
+
+type UserRewardsDetailedBN = {
+  rewards: UserRewardsBN[];
+  failedVaultAddresses: string[];
 };
 ```

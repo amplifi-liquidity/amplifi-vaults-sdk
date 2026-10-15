@@ -10,6 +10,8 @@ import {
   UserRewardsBN,
   UserRewardsByToken,
   UserRewardsByTokenBN,
+  UserRewardsDetailed,
+  UserRewardsDetailedBN,
   VaultWithRewards,
 } from '../types';
 import { isMfdEnabled } from '../utils/isVelodrome';
@@ -110,25 +112,13 @@ export async function getUserRewards(
   return raw ? rewards : formattedRewards(rewards);
 }
 
-export async function getAllUserRewards(
-  accountAddress: string,
-  jsonProvider: JsonRpcProvider,
-  dex: SupportedDex,
-): Promise<UserRewards[]>;
-
-export async function getAllUserRewards(
-  accountAddress: string,
-  jsonProvider: JsonRpcProvider,
-  dex: SupportedDex,
-  raw: true,
-): Promise<UserRewardsBN[]>;
-
-export async function getAllUserRewards(
+/** Shared implementation: rewards for every vault whose rewards decoded, plus the vaults that did not. */
+async function readAllUserRewards(
   accountAddress: string,
   jsonProvider: JsonRpcProvider,
   dex: SupportedDex,
   raw?: true,
-) {
+): Promise<UserRewardsDetailed | UserRewardsDetailedBN> {
   const chainId = await getChainId(jsonProvider);
   if (!isMfdEnabled(chainId, dex)) {
     throw new Error(`This function is not supported on chain ${chainId} and dex ${dex}`);
@@ -138,7 +128,7 @@ export async function getAllUserRewards(
   const vaults = await getAllRewardVaults(chainId, dex);
 
   if (vaults.length === 0) {
-    return [];
+    return { rewards: [], failedVaultAddresses: [] };
   }
 
   // Prepare multicall to get rewards for all vaults at once
@@ -179,12 +169,13 @@ export async function getAllUserRewards(
     }
   }
 
-  return vaults.flatMap((vault: VaultWithRewards, index: number): (UserRewards | UserRewardsBN)[] => {
+  const failedVaultAddresses: string[] = [];
+  const rewards = vaults.flatMap((vault: VaultWithRewards, index: number): (UserRewards | UserRewardsBN)[] => {
     let rewardTokens: UserRewardsByTokenBN[];
     try {
       rewardTokens = withDecimals(claimable[index], onChainDecimals);
     } catch {
-      console.error(`Could not resolve reward token decimals for vault ${vault.id}`);
+      failedVaultAddresses.push(vault.id);
       return [];
     }
     return [
@@ -193,4 +184,61 @@ export async function getAllUserRewards(
         : { vaultAddress: vault.id, rewardTokens: formattedRewards(rewardTokens) },
     ];
   });
+  return { rewards, failedVaultAddresses } as UserRewardsDetailed | UserRewardsDetailedBN;
+}
+
+/**
+ * Rewards for every vault on the dex. A vault whose positive reward cannot be decoded (its token decimals could not
+ * be resolved) is logged and omitted; use `getAllUserRewardsDetailed` to learn which vaults were omitted.
+ */
+export async function getAllUserRewards(
+  accountAddress: string,
+  jsonProvider: JsonRpcProvider,
+  dex: SupportedDex,
+): Promise<UserRewards[]>;
+
+export async function getAllUserRewards(
+  accountAddress: string,
+  jsonProvider: JsonRpcProvider,
+  dex: SupportedDex,
+  raw: true,
+): Promise<UserRewardsBN[]>;
+
+export async function getAllUserRewards(
+  accountAddress: string,
+  jsonProvider: JsonRpcProvider,
+  dex: SupportedDex,
+  raw?: true,
+) {
+  const { rewards, failedVaultAddresses } = await readAllUserRewards(accountAddress, jsonProvider, dex, raw);
+  failedVaultAddresses.forEach((vaultAddress) => {
+    console.error(`Could not resolve reward token decimals for vault ${vaultAddress}`);
+  });
+  return rewards;
+}
+
+/**
+ * Same read as `getAllUserRewards`, but also reports the vaults omitted because a positive reward could not be
+ * decoded, so callers can tell a complete result from an incomplete one.
+ */
+export async function getAllUserRewardsDetailed(
+  accountAddress: string,
+  jsonProvider: JsonRpcProvider,
+  dex: SupportedDex,
+): Promise<UserRewardsDetailed>;
+
+export async function getAllUserRewardsDetailed(
+  accountAddress: string,
+  jsonProvider: JsonRpcProvider,
+  dex: SupportedDex,
+  raw: true,
+): Promise<UserRewardsDetailedBN>;
+
+export async function getAllUserRewardsDetailed(
+  accountAddress: string,
+  jsonProvider: JsonRpcProvider,
+  dex: SupportedDex,
+  raw?: true,
+) {
+  return readAllUserRewards(accountAddress, jsonProvider, dex, raw);
 }
