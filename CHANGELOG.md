@@ -10,6 +10,7 @@
 ### Added
 
 - `getAllUserRewardsDetailed` (and the `UserRewardsDetailed` / `UserRewardsDetailedBN` types): the same read as `getAllUserRewards`, returning `{ rewards, failedVaultAddresses }` so callers can detect vaults omitted because a reward token's decimals could not be resolved. `getAllUserRewards` is unchanged.
+- BSC `ThenaV5Rewards` deployment configuration, including its ICHI vault factory, v2 deposit guard, Algebra Integral/MFD settings, and subgraph endpoints.
 
 ## 1.0.28
 
