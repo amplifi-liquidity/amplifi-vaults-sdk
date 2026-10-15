@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.30
+
+### Fixed
+
+- `getVaultsByTokens` now normalizes V2 subgraph fields (`token0`/`token1` and `allowToken0`/`allowToken1`) before filtering, so V2 deployments such as `ThenaV5Rewards` return their matching vaults.
+
 ## 1.0.29
 
 ### Fixed
