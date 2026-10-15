@@ -325,3 +325,11 @@ export type UserRewardsBN = {
   vaultAddress: string;
   rewardTokens: UserRewardsByTokenBN[];
 };
+export type UserRewardsDetailed = {
+  rewards: UserRewards[];
+  failedVaultAddresses: string[];
+};
+export type UserRewardsDetailedBN = {
+  rewards: UserRewardsBN[];
+  failedVaultAddresses: string[];
+};

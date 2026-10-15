@@ -2,7 +2,7 @@
 import { Interface, JsonRpcProvider } from 'ethers';
 import { getAllRewardVaults } from '../functions/vault';
 import { getAllRewardInfo } from '../functions/rewardInfo';
-import { getAllUserRewards, getUserRewards } from '../functions/userRewards';
+import { getAllUserRewards, getAllUserRewardsDetailed, getUserRewards } from '../functions/userRewards';
 import { getAllUserAmounts, getAllUserBalances } from '../functions/userBalances';
 import { graphqlRequest } from '../graphql/functions';
 import { multicall } from '../utils/multicallUtils';
@@ -147,7 +147,7 @@ test('a positive reward token absent from metadata uses on-chain decimals', asyn
   ]);
 });
 
-test('an unresolvable reward token reports partiality and preserves verified rows', async () => {
+function unresolvableRewardInSecondVault() {
   request.mockResolvedValue({ ichiVaults: [vault(1), vault(2)] });
   (multicall as jest.Mock)
     .mockResolvedValueOnce([
@@ -155,11 +155,41 @@ test('an unresolvable reward token reports partiality and preserves verified row
       { success: true, returnData: iface.encodeFunctionResult('claimableRewards', [[token], [1230000n]]) },
     ])
     .mockResolvedValueOnce([{ success: false, returnData: '0x' }]);
-  await expect(getAllUserRewards(account, provider, SupportedDex.Velodrome, true)).rejects.toMatchObject({
-    name: 'PartialUserRewardsError',
-    failedVaultAddresses: [vaultId(1)],
+}
+
+test('an unresolvable reward token omits only the vault holding it', async () => {
+  unresolvableRewardInSecondVault();
+  expect(await getAllUserRewards(account, provider, SupportedDex.Velodrome, true)).toEqual([
+    { vaultAddress: vaultId(2), rewardTokens: [{ token, tokenDecimals: 6, rewardAmount: 1230000n }] },
+  ]);
+  expect(console.error).toHaveBeenCalledWith(`Could not resolve reward token decimals for vault ${vaultId(1)}`);
+});
+
+test('the detailed reader reports vaults omitted for an unresolvable reward token', async () => {
+  unresolvableRewardInSecondVault();
+  expect(await getAllUserRewardsDetailed(account, provider, SupportedDex.Velodrome, true)).toEqual({
     rewards: [{ vaultAddress: vaultId(2), rewardTokens: [{ token, tokenDecimals: 6, rewardAmount: 1230000n }] }],
+    failedVaultAddresses: [vaultId(1)],
   });
+  expect(console.error).not.toHaveBeenCalled();
+});
+
+test('the detailed reader formats amounts and reports no failures for a complete read', async () => {
+  request.mockResolvedValue({ ichiVaults: [vault(1)] });
+  contractRewards([token], [1230000n]);
+  expect(await getAllUserRewardsDetailed(account, provider, SupportedDex.Velodrome)).toEqual({
+    rewards: [{ vaultAddress: vaultId(1), rewardTokens: [{ token, tokenDecimals: 6, rewardAmount: '1.23' }] }],
+    failedVaultAddresses: [],
+  });
+});
+
+test('the detailed reader returns an empty complete result when the dex has no reward vaults', async () => {
+  request.mockResolvedValue({ ichiVaults: [] });
+  expect(await getAllUserRewardsDetailed(account, provider, SupportedDex.Velodrome)).toEqual({
+    rewards: [],
+    failedVaultAddresses: [],
+  });
+  expect(multicall).not.toHaveBeenCalled();
 });
 
 test('a zero-amount reward token absent from metadata is omitted without failing other vaults', async () => {

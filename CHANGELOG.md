@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.0.29
+
+### Fixed
+
+- `sendUserBalancesQueryRequest` accepts the pre-1.0.28 positional form `(url, account, query, vaultAddress?, isAmplifiHosted?)` again, as well as the 1.0.28 form `(url, account, query, isAmplifiHosted?)`. In the original form `vaultAddress` is still sent as a lowercase query variable.
+- Formatted amounts are exact fixed-point decimal strings: tiny (dust) and very large values no longer render in exponential notation or lose precision.
+
+### Added
+
+- `getAllUserRewardsDetailed` (and the `UserRewardsDetailed` / `UserRewardsDetailedBN` types): the same read as `getAllUserRewards`, returning `{ rewards, failedVaultAddresses }` so callers can detect vaults omitted because a reward token's decimals could not be resolved. `getAllUserRewards` is unchanged.
+
 ## 1.0.28
 
 ### Behavior changes
