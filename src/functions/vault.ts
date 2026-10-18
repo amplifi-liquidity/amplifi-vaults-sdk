@@ -198,8 +198,9 @@ async function getVaultsByTokensAB(
         strVaultByTokensQuery,
         isAmplifiHosted,
       );
-      cache.set(key, result, ttl);
-      return result;
+      const normalizedResult = result.map(normalizeVaultData);
+      cache.set(key, normalizedResult, ttl);
+      return normalizedResult;
     } else {
       throw new Error(`Published URL is invalid for dex ${dex} on chain ${chainId}`);
     }
@@ -209,8 +210,9 @@ async function getVaultsByTokensAB(
     }
     try {
       const result = await sendVaultsByTokensRequest(url, tokenA, tokenB, strVaultByTokensQuery);
-      cache.set(key, result, ttl);
-      return result;
+      const normalizedResult = result.map(normalizeVaultData);
+      cache.set(key, normalizedResult, ttl);
+      return normalizedResult;
     } catch (error2) {
       console.error('Request to public graph URL failed:', error2);
       throw new Error(`Could not get vaults by tokens, dex ${dex} on chain ${chainId}`);

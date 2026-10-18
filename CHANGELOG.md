@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.30
+
+### Fixed
+
+- `getVaultsByTokens` now normalizes V2 subgraph fields (`token0`/`token1` and `allowToken0`/`allowToken1`) before filtering. Before this, it returned no vaults for any V2 deployment (since 1.0.1), including `ThenaV5Rewards`.
+
 ## 1.0.29
 
 ### Fixed
@@ -9,6 +15,7 @@
 
 ### Added
 
+- BSC `ThenaV5Rewards` deployment configuration: ICHI vault factory, v2 deposit guard, Algebra Integral/MFD settings and subgraph endpoints.
 - `getAllUserRewardsDetailed` (and the `UserRewardsDetailed` / `UserRewardsDetailedBN` types): the same read as `getAllUserRewards`, returning `{ rewards, failedVaultAddresses }` so callers can detect vaults omitted because a reward token's decimals could not be resolved. `getAllUserRewards` is unchanged.
 
 ## 1.0.28
