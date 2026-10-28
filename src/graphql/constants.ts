@@ -703,9 +703,9 @@ export const graphUrls: Record<SupportedChainId, dexGraph> = {
   },
   [SupportedChainId.monad]: {
     [SupportedDex.Atlantis]: {
-      url: 'https://api.studio.thegraph.com/query/88584/monad-v-2-atlantis/version/latest',
+      url: 'https://api.goldsky.com/api/public/project_clynrq1h8gam301xx6vgngo9p/subgraphs/g2/monad-v2-atlantis/gn',
       publishedUrl:
-        'https://gateway-arbitrum.network.thegraph.com/api/[api-key]/subgraphs/id/EZgWBfZdrmM59HL5SbQkcQp53toKpvKkHgP8RcuQH5uw',
+        'https://api.goldsky.com/api/public/project_clynrq1h8gam301xx6vgngo9p/subgraphs/g2/monad-v2-atlantis/gn',
       supportsCollectFees: true,
       version: 2,
     },
