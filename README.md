@@ -7,6 +7,7 @@ This SDK contains a collection of functions to interact with Amplifi Vaults smar
 ## Table of Contents
 
 * [__Installation__](#Installation)
+* [__Development__](#Development)
 * [__Subgraphs__](#Subgraphs)
 * [__Usage__](#Usage)
      * [__Vault Functions__](#Vault)
@@ -56,6 +57,27 @@ or
 ```bash
 npm install @amplifi-liquidity/amplifi-vaults-sdk
 ```
+
+## Development
+
+Node is pinned by `.nvmrc`; yarn 3 is pinned by `packageManager` (run `corepack enable` once).
+
+```bash
+yarn install --immutable
+yarn verify      # generate, lint, typecheck, build, tests: what CI runs on every pull request
+yarn test        # hermetic jest suite only
+yarn test:live   # also index.test.ts, against live chains (needs PROVIDER_URL, PRIVATE_KEY, ACCOUNT)
+```
+
+`yarn verify` exit codes:
+
+| Code | Meaning |
+| ---- | ------- |
+| 0 | green |
+| 1 | a check failed (generate, lint, typecheck, build, a test file that still fails when re-run alone, a jest crash or missing report, or a run that found zero test files or tests) |
+| 4 | flaky: a test file failed in the batch but passed when re-run alone. Reported, never green |
+
+CI (`.github/workflows/ci.yml`) runs `yarn verify` as the required `check` job. On pushes to `main`, a backstop job keeps one open `main is red` issue (label `ci-red`) while CI fails and closes it on the next green run.
 
 ## Usage
 ### Subgraphs

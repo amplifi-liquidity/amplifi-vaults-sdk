@@ -28,6 +28,8 @@
     "preversion": "npm run lint",
     "test": "jest --runInBand --forceExit",
     "test:live": "LIVE_TESTS=1 jest --runInBand --forceExit",
+    "typecheck": "tsc --noEmit",
+    "verify": "node scripts/verify.mjs",
     "version": "npm run format && git add -A src"
   },
   "repository": {

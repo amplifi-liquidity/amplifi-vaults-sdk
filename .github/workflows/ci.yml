@@ -8,7 +8,14 @@ on:
 permissions:
   contents: read
 
+# A newer push to the same pull request cancels its older run; runs on main never cancel
+# each other (the backstop must see every main commit's result).
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
+  # `check` is the required status check on main: keep this job id.
   check:
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -20,9 +27,46 @@ jobs:
         with:
           node-version-file: .nvmrc
       - run: corepack enable
+
+      # Yarn 3 keeps its package cache in .yarn/cache; corepack keeps the pinned yarn
+      # release in ~/.cache/node/corepack. Restoring both turns install into a link step.
+      - name: Restore the yarn cache
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: |
+            .yarn/cache
+            .yarn/install-state.gz
+            ~/.cache/node/corepack
+          key: yarn-v1-${{ runner.os }}-node${{ hashFiles('.nvmrc') }}-${{ hashFiles('yarn.lock', '.yarnrc.yml', 'package.json') }}
+          restore-keys: |
+            yarn-v1-${{ runner.os }}-node${{ hashFiles('.nvmrc') }}-
+
       - run: yarn install --immutable
-      # Same gate as prepublishOnly, so a green PR is publishable.
-      - run: yarn generate
-      - run: yarn test
-      - run: yarn lint
-      - run: yarn build
+      # generate, lint, typecheck, build, tests (failing test files re-run alone):
+      # exit 1 failed, exit 4 flaky. A superset of the prepublishOnly / release gate.
+      - run: yarn verify
+
+  # Keeps one "main is red" issue open while CI on main fails; closes it when green.
+  backstop:
+    if: ${{ always() && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+    needs: [check]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          persist-credentials: false
+
+      # Reporting must never turn a green run red (people and releases read CI status).
+      - name: Report backstop result
+        continue-on-error: true
+        run: ./scripts/ci/backstop-report.sh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          SHA: ${{ github.sha }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          RESULTS: ${{ needs.check.result }}
