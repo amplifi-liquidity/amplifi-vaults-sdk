@@ -601,7 +601,7 @@ export const graphUrls: Record<SupportedChainId, dexGraph> = {
       isAmplifiHosted: true,
     },
     [SupportedDex.Velodrome]: {
-      url: 'https://api.studio.thegraph.com/query/88584/ink-v-3-velodrome/version/latest',
+      url: 'https://graph-api.amplifiliquidity.com/subgraphs/name/amplifi/ink-v3-velodrome',
       publishedUrl: 'https://graph-api.amplifiliquidity.com/subgraphs/name/amplifi/ink-v3-velodrome',
       supportsCollectFees: true,
       version: 2,
