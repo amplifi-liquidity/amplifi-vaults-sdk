@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.0.31
+
+### Fixed
+
+- Ink Velodrome v3 uses the self-hosted Amplifi subgraph instead of the deleted Graph Studio endpoint. Consumers need `AMPLIFI_SUBGRAPH_API_KEY` to access it.
+- Monad Atlantis uses the ICHI Vaults Goldsky subgraph instead of the deleted Studio endpoint and obsolete gateway URL.
+
 ## 1.0.30
 
 ### Fixed
